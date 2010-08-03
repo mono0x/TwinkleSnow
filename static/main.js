@@ -86,9 +86,6 @@ $(function() {
   });
 
   var prependTweet = function(tweet) {
-    var data = tweet.data;
-    var user = data.user;
-
     var convertDate = function(jsonDate) {
       var re = /^(.+) (.+) (..) (..):(..):(..) (.+) (.+)$/;
       var pattern = "$2 $3, $8 $4:$5:$6 UTC+0000";
@@ -101,20 +98,32 @@ $(function() {
       return month + '/' + date + ' ' + hours + ':' + minutes;
     }
 
+    var data = tweet.data;
+    var user = data.user;
+    var screen_name = user.screen_name;
+    var id = data.id;
+
     var view = $('#views > #view-' + tweet.tab_id);
     view.prepend(
-      '<div id="tweet-' + data.id + '">' +
+      '<div id="tweet-' + id + '">' +
         '<div class="content">' +
           '<div class="text">' +
             '<span class="screen_name">' +
-              user.screen_name +
+              screen_name +
             '</span> ' +
             tweet.html +
           '</div>' +
           '<div class="information">' +
-            convertDate(data.created_at) + ' ' +
-            'via ' + data.source + ' ' +
-            'Reply Retweet RT Fav' +
+            '<a target="_blank" href="http://twitter.com/' + screen_name + '/status/' + id + '">' +
+              convertDate(data.created_at) +
+            '</a> ' +
+            'via ' + data.source +
+            ' | ' +
+            '<a target="_blank" href="http://twitter.com/?status=@' + screen_name + ' &in_reply_to_status_id=' + id + '&in_reply_to=' + screen_name + '">Reply</a> ' +
+            '<a href="#retweet">Retweet</a> ' +
+            '<a target="_blank" href="http://twitter.com/?status= RT @' + screen_name + ': ' + data.text + '">RT</a> ' +
+            '<a href="#unfollow">Unfollow</a> ' +
+            '<a href="#fav">Fav</a>' + 
           '</div>' +
         '</div>' +
         '<div class="icon">' +
@@ -180,6 +189,44 @@ $(function() {
   $('#auth form').submit(function() {
     var passwordHash = CybozuLabs.SHA1.calc($('#auth input[type="password"]').val());
     connectWebSocket(passwordHash);
+    return false;
+  });
+
+  var getTweetIdFromAnchor = function(anchor) {
+    var id = $(anchor).parent().parent().parent().attr('id');
+    if(id.match(/^tweet-(\d+)$/)) {
+      return parseInt(RegExp.$1);
+    }
+    return null;
+  };
+
+  var getTweetFromAnchor = function(anchor) {
+    var id = getTweetIdFromAnchor(anchor);
+    if(id == null) {
+      return null;
+    }
+    var tweets = currentTab.tweets;
+    for(var i = 0, n = tweets.length; i < n; ++i) {
+      if(tweets[i].data.id == id) {
+        return tweets[i];
+      }
+    }
+    return null;
+  };
+
+  $('a[href="#retweet"]').live('click', function() {
+    var tweet = getTweetFromAnchor(this);
+    return false;
+  });
+  $('a[href="#unfollow"]').live('click', function() {
+    var tweet = getTweetFromAnchor(this);
+    $.getJSON('/api/unfollow/' + tweet.data.user.id, {}, function(data) {
+      console.log(data);
+    });
+    return false;
+  });
+  $('a[href="#fav"]').live('click', function() {
+    var tweet = getTweetFromAnchor(this);
     return false;
   });
 

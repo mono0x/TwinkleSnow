@@ -65,6 +65,8 @@ class OAuthController < ControllerBase
       access_token = oauth.access_token
       twitter = Twitter::Base.new(oauth)
       credentials = twitter.verify_credentials
+      session[:access_token] = access_token.token
+      session[:access_token_secret] = access_token.secret
       session[:screen_name] = credentials[:screen_name]
       redirect '/'
     rescue Twitter::Unauthorized => e
@@ -84,7 +86,29 @@ end
 class APIController < ControllerBase
   map '/api'
 
+  def unfollow(user_id)
+    unless session[:screen_name] == @@config.basic_auth[:account]
+      return { :result => 'failure' }.to_json
+    end
+    begin
+      oauth = Twitter::OAuth.new(
+        @@config.oauth[:consumer_token], @@config.oauth[:consumer_secret])
+      oauth.authorize_from_access(
+        session[:access_token],
+        session[:access_token_secret])
+      twitter = Twitter::Base.new(oauth)
+      twitter.friendship_destroy(user_id)
+
+      { :result => 'success' }.to_json
+    rescue Twitter::Unauthorized => e
+      { :result => 'failure' }.to_json
+    end
+  end
+
   def read(tab_id, tweet_id)
+    unless session[:screen_name] == @@config.basic_auth[:account]
+      return { :result => 'failure' }.to_json
+    end
     tt = @@config.tokyo_tyrant
     db = tokyo_tyrant(tt[:host], tt[:port])
     q = TokyoTyrant::RDBQRY.new(db)
@@ -93,7 +117,7 @@ class APIController < ControllerBase
     res = q.search.each do |key|
       db.delete key
     end
-    { :tab_id => tab_id.to_i, :read => tweet_id.to_i }.to_json
+    { :result => 'success', :tab_id => tab_id.to_i, :read => tweet_id.to_i }.to_json
   end
 
 end
