@@ -1,0 +1,83 @@
+
+#main {
+  width: 800px;
+}
+
+#views {
+  width: 600px;
+}
+
+#views > div {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 600px;
+  margin: 0;
+  padding: 0;
+}
+
+#views > div > div {
+  position: relative;
+  left: 0;
+  top: 0;
+  width: 600px;
+  min-height: 56px;
+  padding-top: 0px;
+  padding-bottom: 16px;
+}
+
+#views .content {
+  width: 544px;
+  margin-left: 56px;
+}
+
+#views .text {
+  margin: 0;
+  line-height: 140%;
+}
+
+#views .information {
+  text-align: right;
+  vertical-align: bottom;
+  color: gray;
+  font-size: 80%;
+}
+
+#views .icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 48px;
+  margin: 0;
+  padding: 4px;
+}
+
+#views .icon img {
+  margin: 0;
+}
+
+#views .screen_name {
+  font-weight: bold;
+}
+
+#views .information a {
+  color: gray;
+}
+
+#navigation {
+  position: fixed;
+  width: 200px;
+  height: 100%;
+  top: 0;
+  left: 600px;
+}
+
+#tabs .unread {
+  font-size: 90%;
+}
+
+#tabs .has-unread {
+  font-weight: bold;
+}
+
+

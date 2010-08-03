@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TwinkleSnow</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/sha1.js"></script>
+    <script type="text/javascript" src="/static/jquery.scrollTo-min.js"></script>
+    <script type="text/javascript">
+      var tabs = <%= @tabs.to_json %>;
+      var webSocket = <%= @web_socket.to_json %>;
+    </script>
+    <script type="text/javascript" src="/static/main.js"></script>
+  </head>
+  <body>
+    <div id="auth">
+      <form action="/">
+        <input type="password" />
+        <input type="submit" value="Login" />
+      </form>
+      <p></p>
+    </div>
+
+    <div id="main">
+      <div id="views"></div>
+      <div id="navigation">
+        <ul id="tabs"></ul>
+      </div>
+    </div>
+  </body>
+</html>
