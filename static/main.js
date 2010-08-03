@@ -62,6 +62,9 @@ $(function() {
   var updateHash = function() {
     if(window.location.hash.match(/^#tabs\/([a-z0-9\-]+)$/)) {
       var name = RegExp.$1;
+      if(currentTab != null) {
+        updateRead();
+      }
       currentTab = tabs.find(function(t) { return t.name == name; });
       var viewId = '#view-' + currentTab.id;
       $('#views > div:not(' + viewId + ')').hide();
