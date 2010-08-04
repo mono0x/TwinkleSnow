@@ -22,14 +22,12 @@ $(function() {
     tab.unreadCount = 0;
     tab.scrollTop = 0;
     $('#views').append(
-      '<div id="view-' + tab.id + '"></div>');
+      $('<div />').attr({ id : 'view-' + tab.id }));
     $('#tabs').append(
-      '<li id="tab-' + tab.id + '">' +
-        '<a href="#tabs/' + tab.name + '">' +
-          tab.name +
-          ' <span class="unread">(<span class="count">0</span>)</span>' +
-        '</a>' +
-      '</li>');
+      $('<li />').attr({ id : 'tab-' + tab.id }).append(
+        $('<a />').attr({ href : '#tabs/' + tab.name }).append(
+          tab.name, ' ', $('<span />').attr({ class : 'unread' }).append(
+            '(', $('<span />').attr({ class : 'count' }).append('0'), ')'))));
   });
 
   var updateUnreadCount = function(tab, count) {
@@ -104,32 +102,7 @@ $(function() {
     var id = data.id;
 
     var view = $('#views > #view-' + tweet.tab_id);
-    view.prepend(
-      '<div id="tweet-' + id + '">' +
-        '<div class="content">' +
-          '<div class="text">' +
-            '<span class="screen_name">' +
-              screen_name +
-            '</span> ' +
-            tweet.html +
-          '</div>' +
-          '<div class="information">' +
-            '<a target="_blank" href="http://twitter.com/' + screen_name + '/status/' + id + '">' +
-              convertDate(data.created_at) +
-            '</a> ' +
-            'via ' + data.source +
-            ' | ' +
-            '<a target="_blank" href="http://twitter.com/?status=@' + screen_name + ' &in_reply_to_status_id=' + id + '&in_reply_to=' + screen_name + '">Reply</a> ' +
-            '<a href="#retweet">Retweet</a> ' +
-            '<a target="_blank" href="http://twitter.com/?status= RT @' + screen_name + ': ' + data.text + '">RT</a> ' +
-            '<a href="#unfollow">Unfollow</a> ' +
-            '<a href="#fav">Fav</a>' + 
-          '</div>' +
-        '</div>' +
-        '<div class="icon">' +
-          '<img width="48" height="48" src="' + user.profile_image_url + '" />' +
-        '</div>' +
-      '</div>');
+    view.prepend(tweet.html);
     var visible = view.is(':visible');
     if(!visible) {
       view.show();
@@ -228,7 +201,7 @@ $(function() {
   });
   $('a[href="#fav"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
-    $.getJSON('/api/create_favorite/' + tweet.data.id, {}, function(data) {
+    $.getJSON('/api/create_favorite/' + tweet.data.user.id, {}, function(data) {
     });
     return false;
   });
