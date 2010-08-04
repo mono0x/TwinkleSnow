@@ -86,28 +86,39 @@ end
 class APIController < ControllerBase
   map '/api'
 
+  def retweet(tweet_id)
+    unless session[:screen_name] == @@config.basic_auth[:account]
+      return failure
+    end
+    twitter = create_twitter
+    return failure unless twitter
+    twitter.retweet tweet_id
+    success
+  end
+
   def unfollow(user_id)
     unless session[:screen_name] == @@config.basic_auth[:account]
-      return { :result => 'failure' }.to_json
+      return failure
     end
-    begin
-      oauth = Twitter::OAuth.new(
-        @@config.oauth[:consumer_token], @@config.oauth[:consumer_secret])
-      oauth.authorize_from_access(
-        session[:access_token],
-        session[:access_token_secret])
-      twitter = Twitter::Base.new(oauth)
-      twitter.friendship_destroy(user_id)
+    twitter = create_twitter
+    return failure unless twitter
+    twitter.friendship_destroy user_id
+    success
+  end
 
-      { :result => 'success' }.to_json
-    rescue Twitter::Unauthorized => e
-      { :result => 'failure' }.to_json
+  def create_favorite(tweet_id)
+    unless session[:screen_name] == @@config.basic_auth[:account]
+      return failure
     end
+    twitter = create_twitter
+    return failure unless twitter
+    twitter.favorite_create tweet_id
+    success
   end
 
   def read(tab_id, tweet_id)
     unless session[:screen_name] == @@config.basic_auth[:account]
-      return { :result => 'failure' }.to_json
+      return failure
     end
     tt = @@config.tokyo_tyrant
     db = tokyo_tyrant(tt[:host], tt[:port])
@@ -117,7 +128,37 @@ class APIController < ControllerBase
     res = q.search.each do |key|
       db.delete key
     end
-    { :result => 'success', :tab_id => tab_id.to_i, :read => tweet_id.to_i }.to_json
+    success :tab_id => tab_id.to_i, :read => tweet_id.to_i
+  end
+
+  private
+
+  def make_result(result, h)
+    hash = h.dup
+    hash.store :result, result
+    hash.to_json
+  end
+
+  def success(hash = {})
+    make_result 'success', hash
+  end
+
+  def failure(hash = {})
+    make_result 'failure', hash
+  end
+
+  def create_twitter
+    begin
+      oauth = Twitter::OAuth.new(
+        @@config.oauth[:consumer_token],
+        @@config.oauth[:consumer_secret])
+      oauth.authorize_from_access(
+        session[:access_token],
+        session[:access_token_secret])
+      Twitter::Base.new(oauth)
+    rescue Twitter::Unauthorized => e
+      nil
+    end
   end
 
 end

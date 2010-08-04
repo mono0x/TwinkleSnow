@@ -216,17 +216,20 @@ $(function() {
 
   $('a[href="#retweet"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
+    $.getJSON('/api/retweet/' + tweet.data.id, {}, function(data) {
+    });
     return false;
   });
   $('a[href="#unfollow"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
     $.getJSON('/api/unfollow/' + tweet.data.user.id, {}, function(data) {
-      console.log(data);
     });
     return false;
   });
   $('a[href="#fav"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
+    $.getJSON('/api/create_favorite/' + tweet.data.id, {}, function(data) {
+    });
     return false;
   });
 
