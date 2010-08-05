@@ -32,7 +32,16 @@ BREAK_RE = /(\r\n)/
 TEXT_RE = /#{REPLY_RE}|#{HASHTAG_RE}|#{URI_RE}|#{BREAK_RE}/
 
 def to_html(data)
-  body = data['text'].gsub(TEXT_RE) do
+  retweet = data['retweeted_status']
+  status = retweet || data
+
+  id = status['id']
+  user = status['user']
+  screen_name = user['screen_name']
+  text = status['text']
+  created_at = Time.parse(status['created_at'])
+
+  content = text.gsub(TEXT_RE) do
     case
     when $1 then "<a target=\"_blank\" href=\"http://twitter.com/#$2\">#$1</a>"
     when $3 then "<a target=\"_blank\" href=\"http://search.twitter.com/search?q=%23#$4\">#$3</a>"
@@ -40,25 +49,30 @@ def to_html(data)
     when $6 then '<br />'
     end
   end
-  id = data['id']
-  user = data['user']
-  screen_name = user['screen_name']
-  created_at = Time.parse(data['created_at'])
 
   <<-"EOS"
-  <div id="tweet-#{id}">
+  <div id="tweet-#{data['id']}">
     <div class="content">
       <div class="text">
-        <span class="screen_name">#{screen_name}</span> #{body}
+        <span class="screen_name">#{screen_name}</span> #{content}
       </div>
+      #{
+        if retweet
+          <<-"EOS"
+          <div class="retweet">
+            Retweeted by <a href="http://twitter.com/#{data['user']['screen_name']}">#{data['user']['screen_name']}</a>
+          </div>
+          EOS
+        end
+      }
       <div class="information">
         <a target="_blank" href="http://twitter.com/#{screen_name}/status/#{id}">#{created_at.strftime('%m/%d %H:%M')}</a>
         via
-        #{data['source']}
+        #{status['source']}
         |
         <a target="_blank" href="http://twitter.com/?status=@#{screen_name}&in_reply_to_status_id=#{id}&in_reply_to=#{screen_name}">Reply</a>
         <a href="#retweet">Retweet</a>
-        <a target="_blank" href="http://twitter.com/?status= RT @#{screen_name}: #{data['text']}">RT</a>
+        <a target="_blank" href="http://twitter.com/?status= RT @#{screen_name}: #{text}">RT</a>
         <a href="#unfollow">Unfollow</a>
         <a href="#fav">Fav</a>
       </div>

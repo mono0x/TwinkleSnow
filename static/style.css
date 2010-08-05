@@ -40,6 +40,11 @@ body {
   line-height: 140%;
 }
 
+#views .retweet {
+  color: gray;
+  font-size: 80%;
+}
+
 #views .information {
   text-align: right;
   vertical-align: bottom;
