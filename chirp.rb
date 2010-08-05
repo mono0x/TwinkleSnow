@@ -46,27 +46,27 @@ def to_html(data)
   created_at = Time.parse(data['created_at'])
 
   <<-"EOS"
-    <div id="tweet-#{id}">
-      <div class="content">
-        <div class="text">
-          <span class="screen_name">#{screen_name}</span> #{body}
-        </div>
-        <div class="information">
-          <a target="_blank" href="http://twitter.com/#{screen_name}/status/#{id}">#{created_at.strftime('%m/%d %H:%M')}</a>
-          via
-          #{data['source']}
-          |
-            <a target="_blank" href="http://twitter.com/?status=@#{screen_name}&in_reply_to_status_id=#{id}&in_reply_to=#{screen_name}">Reply</a>
-            <a href="#retweet">Retweet</a>
-            <a target="_blank" href="http://twitter.com/?status= RT @#{screen_name}: #{data['text']}">RT</a>
-            <a href="#unfollow">Unfollow</a>
-            <a href="#fav">Fav</a>
-          </div>
-        </div>
-        <div class="icon">
-          <img width="48" height="48" src="#{user['profile_image_url']}" />
-        </div>
+  <div id="tweet-#{id}">
+    <div class="content">
+      <div class="text">
+        <span class="screen_name">#{screen_name}</span> #{body}
+      </div>
+      <div class="information">
+        <a target="_blank" href="http://twitter.com/#{screen_name}/status/#{id}">#{created_at.strftime('%m/%d %H:%M')}</a>
+        via
+        #{data['source']}
+        |
+        <a target="_blank" href="http://twitter.com/?status=@#{screen_name}&in_reply_to_status_id=#{id}&in_reply_to=#{screen_name}">Reply</a>
+        <a href="#retweet">Retweet</a>
+        <a target="_blank" href="http://twitter.com/?status= RT @#{screen_name}: #{data['text']}">RT</a>
+        <a href="#unfollow">Unfollow</a>
+        <a href="#fav">Fav</a>
+      </div>
     </div>
+    <div class="icon">
+      <img width="48" height="48" src="#{user['profile_image_url']}" />
+    </div>
+  </div>
   EOS
 end
 
