@@ -61,12 +61,14 @@ $(function() {
     if(window.location.hash.match(/^#tabs\/([a-z0-9\-]+)$/)) {
       var name = RegExp.$1;
       if(currentTab != null) {
+        $('#tab-' + currentTab.id).removeClass('active');
         updateRead();
       }
       currentTab = tabs.find(function(t) { return t.name == name; });
       var viewId = '#view-' + currentTab.id;
       $('#views > div:not(' + viewId + ')').hide();
       $('#views > div:hidden' + viewId).show();
+      $('#tab-' + currentTab.id).addClass('active');
       $.scrollTo(currentTab.scrollTop);
     }
   };
