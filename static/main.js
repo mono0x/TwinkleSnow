@@ -78,6 +78,14 @@ $(function() {
       if(currentTab != null) {
         $('#tab-' + currentTab.id).removeClass('active');
         updateRead();
+        var read = currentTab.read;
+        var tweets = currentTab.tweets;
+        for(var i = 0, n = tweets.length; i < n; ++i) {
+          var tweet = tweets[i];
+          if(tweet.data.id <= read) {
+            $('#tweet-' + tweet.data.id).addClass('read');
+          }
+        }
       }
       currentTab = tabs.find(function(t) { return t.name == name; });
       var viewId = '#view-' + currentTab.id;
@@ -265,7 +273,6 @@ $(function() {
             var tab = tabs[id];
             if(tab.unreadCount > 0) {
               window.location.hash = '#tabs/' + tab.name;
-              updateHash();
               break;
             }
           }
@@ -284,7 +291,6 @@ $(function() {
             var tab = tabs[id];
             if(tab.unreadCount > 0) {
               window.location.hash = '#tabs/' + tab.name;
-              updateHash();
               break;
             }
           }

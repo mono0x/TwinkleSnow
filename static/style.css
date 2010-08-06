@@ -73,6 +73,10 @@ body {
   color: gray;
 }
 
+#views .read {
+  opacity: 0.5;
+}
+
 #navigation {
   position: fixed;
   width: 199px;
