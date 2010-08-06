@@ -26,8 +26,8 @@ $(function() {
     $('#tabs').append(
       $('<li />').attr({ id : 'tab-' + tab.id }).append(
         $('<a />').attr({ href : '#tabs/' + tab.name }).append(
-          tab.name, ' ', $('<span />').attr({ class : 'unread' }).append(
-            '(', $('<span />').attr({ class : 'count' }).append('0'), ')'))));
+          tab.name, ' ', $('<span />').addClass('unread').append(
+            '(', $('<span />').addClass('count').append('0'), ')'))));
   });
 
   var updateUnreadCount = function(tab, count) {
@@ -37,7 +37,7 @@ $(function() {
     tabElement.toggleClass('has-unread', count > 0);
   };
   
-  var updateRead = function() {
+  var findTweetAndElementOnTop = function() {
     var scrollTop = $(window).scrollTop();
     var tweets = currentTab.tweets;
     var n = tweets.length;
@@ -45,15 +45,30 @@ $(function() {
       var tweet = tweets[i];
       var id = tweet.data.id;
       var tweetElement = $('#tweet-' + id);
-      if(tweetElement.offset().top - scrollTop > 0) {
-        if(id > currentTab.read) {
-          currentTab.read = id;
-          var path = '/api/read/' + currentTab.id + '/' + id;
-          $.getJSON(path, {}, function(data) {});
-          updateUnreadCount(currentTab, n - i - 1);
-        }
-        break;
+      if(tweetElement.offset().top - scrollTop >= 0) {
+        return {
+          tweet : tweet,
+          element : tweetElement,
+          count : n - i - 1
+        };
       }
+    }
+    return null;
+  }
+  
+  var updateRead = function() {
+    var te = findTweetAndElementOnTop();
+    if(te == null) {
+      return;
+    }
+    var tweet = te.tweet;
+    var id = tweet.data.id;
+    var count = te.count;
+    if(id > currentTab.read) {
+      currentTab.read = id;
+      var path = '/api/read/' + currentTab.id + '/' + id;
+      $.getJSON(path, {}, function(data) {});
+      updateUnreadCount(currentTab, count);
     }
   }
 
@@ -206,6 +221,79 @@ $(function() {
     $.getJSON('/api/create_favorite/' + tweet.data.user.id, {}, function(data) {
     });
     return false;
+  });
+
+  $('input').keypress(function(e) {
+    e.stopPropagation();
+  });
+
+  $(document).keypress(function(e) {
+    switch(e.keyCode) {
+    case 106: // j
+      {
+        var te = findTweetAndElementOnTop();
+        if(te) {
+          var next = te.element.next();
+          if(next.length > 0) {
+            $.scrollTo(next, 0);
+          }
+        }
+      }
+      e.preventDefault();
+      break;
+
+    case 107: // k
+      {
+        var te = findTweetAndElementOnTop();
+        if(te) {
+          var prev = te.element.prev();
+          if(prev.length > 0) {
+            $.scrollTo(prev, 0);
+          }
+        }
+      }
+      e.preventDefault();
+      break;
+
+    case 97: // a
+      {
+        if(currentTab != null) {
+          var n = tabs.length;
+          var id = currentTab.id;
+          for(var i = 0; i < n - 1; ++i) {
+            id = (id + n - 1) % n;
+            var tab = tabs[id];
+            if(tab.unreadCount > 0) {
+              window.location.hash = '#tabs/' + tab.name;
+              updateHash();
+              break;
+            }
+          }
+        }
+      }
+      e.preventDefault();
+      break;
+
+    case 115: // s
+      {
+        if(currentTab != null) {
+          var n = tabs.length;
+          var id = currentTab.id;
+          for(var i = 0; i < n - 1; ++i) {
+            id = (id + 1) % n;
+            var tab = tabs[id];
+            if(tab.unreadCount > 0) {
+              window.location.hash = '#tabs/' + tab.name;
+              updateHash();
+              break;
+            }
+          }
+        }
+      }
+      e.preventDefault();
+      break;
+
+    }
   });
 
 });
