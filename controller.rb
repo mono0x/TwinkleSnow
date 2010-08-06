@@ -17,15 +17,18 @@ class MainController < ControllerBase
   engine :Erubis
 
   def index
-    unless session[:screen_name] == @@config.basic_auth[:account]
-      unless session[:screen_name]
-        redirect '/oauth/request_token'
-      else
+    user = nil
+    if session[:user]
+      user = JSON.parse(session[:user])
+      unless user['screen_name'] == @@config.basic_auth[:account]
         redirect '/error/auth'
       end
+    else
+      redirect '/oauth/request_token'
     end
     @tabs = @@config.tabs
     @web_socket = @@config.web_socket
+    @user = user
   end
 
 end
@@ -67,7 +70,7 @@ class OAuthController < ControllerBase
       credentials = twitter.verify_credentials
       session[:access_token] = access_token.token
       session[:access_token_secret] = access_token.secret
-      session[:screen_name] = credentials[:screen_name]
+      session[:user] = credentials.to_json
       redirect '/'
     rescue Twitter::Unauthorized => e
     end
@@ -87,7 +90,8 @@ class APIController < ControllerBase
   map '/api'
 
   def retweet(tweet_id)
-    unless session[:screen_name] == @@config.basic_auth[:account]
+    user = JSON.parse(session[:user])
+    unless user['screen_name'] == @@config.basic_auth[:account]
       return failure
     end
     twitter = create_twitter
@@ -97,7 +101,8 @@ class APIController < ControllerBase
   end
 
   def unfollow(user_id)
-    unless session[:screen_name] == @@config.basic_auth[:account]
+    user = JSON.parse(session[:user])
+    unless user['screen_name'] == @@config.basic_auth[:account]
       return failure
     end
     twitter = create_twitter
@@ -107,7 +112,8 @@ class APIController < ControllerBase
   end
 
   def create_favorite(tweet_id)
-    unless session[:screen_name] == @@config.basic_auth[:account]
+    user = JSON.parse(session[:user])
+    unless user['screen_name'] == @@config.basic_auth[:account]
       return failure
     end
     twitter = create_twitter
@@ -117,7 +123,8 @@ class APIController < ControllerBase
   end
 
   def read(tab_id, tweet_id)
-    unless session[:screen_name] == @@config.basic_auth[:account]
+    user = JSON.parse(session[:user])
+    unless user['screen_name'] == @@config.basic_auth[:account]
       return failure
     end
     tt = @@config.tokyo_tyrant

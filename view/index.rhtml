@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <title>TwinkleSnow</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css" />
+    <style type="text/css">
+      body {
+        background-color: #<%= @user['profile_background_color'] %>;
+        background-image: url(<%= @user['profile_background_image_url'] %>);
+        background-repeat: <%= @user['profile_background_tile'] ? 'repeat' : 'no-repeat' %>;
+        background-attachment: fixed;
+
+      }
+    </style>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
     <script type="text/javascript" src="/static/sha1.js"></script>
     <script type="text/javascript" src="/static/jquery.scrollTo-min.js"></script>
@@ -14,18 +23,22 @@
     <script type="text/javascript" src="/static/main.js"></script>
   </head>
   <body>
-    <div id="auth">
-      <form action="/">
-        <input type="password" />
-        <input type="submit" value="Login" />
-      </form>
-      <p></p>
-    </div>
+    <div id="container">
+      <div id="auth">
+        <form action="/">
+          <input type="password" />
+          <input type="submit" value="Login" />
+        </form>
+        <p></p>
+      </div>
 
-    <div id="main">
-      <div id="views"></div>
-      <div id="navigation">
-        <ul id="tabs"></ul>
+      <div id="main">
+        <div id="views"></div>
+        <div id="navigation-container">
+          <div id="navigation">
+            <ul id="tabs"></ul>
+          </div>
+        </div>
       </div>
     </div>
   </body>

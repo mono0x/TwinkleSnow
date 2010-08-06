@@ -1,33 +1,47 @@
 
 body {
+  margin: 0;
   font-family: sans-serif;
+}
+
+#container {
+  width: 800px;
+  height: 100%;
+  margin: 16px auto;
+  color: black;
+  background-color: white;
+  -webkit-border-radius: 8px;
 }
 
 #main {
   width: 800px;
+  height: auto;
+  position: relative;
 }
 
 #views {
+  position: relative;
   width: 600px;
-  padding-top: 8px;
+  border-right: solid 1px silver;
+  z-index: 1;
 }
 
 #views > div {
-  position: absolute;
-  left: 0;
-  right: 0;
   width: 584px;
   margin: 0;
-  padding: 0 8px;
+  padding: 16px 8px;
 }
 
 #views > div > div {
   position: relative;
-  left: 0;
-  top: 0;
   width: 584px;
   min-height: 56px;
   margin-bottom: 16px;
+}
+
+#views > div > div:not(:last-child) {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
 }
 
 #views .content {
@@ -38,11 +52,13 @@ body {
 #views .text {
   margin: 0;
   line-height: 140%;
+  padding: 0 12px 4px 12px;
 }
 
 #views .retweet {
   color: gray;
   font-size: 80%;
+  padding: 0 12px 4px 12px;
 }
 
 #views .information {
@@ -50,6 +66,7 @@ body {
   vertical-align: bottom;
   color: gray;
   font-size: 80%;
+  padding: 0 12px 4px 12px;
 }
 
 #views .icon {
@@ -57,6 +74,7 @@ body {
   left: 0;
   top: 0;
   width: 48px;
+  height: 48px;
   margin: 0;
   padding: 4px;
 }
@@ -77,20 +95,28 @@ body {
   opacity: 0.5;
 }
 
-#navigation {
+#navigation-container {
   position: fixed;
+  width: 200px;
+  top: 16px;
+  padding-left: 600px;
+  background-color: white;
+  -webkit-border-radius: 8px;
+}
+
+#navigation {
+  position: relative;
   width: 199px;
-  height: 100%;
-  top: 0;
-  left: 600px;
-  margin: 0;
-  padding: 0;
-  border-left: solid 1px black;
+  padding: 32px 0;
+  border-left: 1px solid silver;
+  z-index: 2;
 }
 
 #tabs {
   -webkit-padding-start: 0;
+  margin: 0;
   margin-left: -1px;
+  padding: 0;
 }
 
 #tabs li {
@@ -103,8 +129,10 @@ body {
   border-top: solid 1px white;
   border-right: solid 1px white;
   border-bottom: solid 1px white;
-  border-left: solid 1px black;
+  border-left: solid 1px silver;
   background-color: #eee;
+  -webkit-border-top-right-radius: 6px;
+  -webkit-border-bottom-right-radius: 6px;
 }
 
 #tabs a {
@@ -112,12 +140,13 @@ body {
   width: 100%;
   height: 100%;
   color: black;
+  text-decoration: none;
 }
 
 #tabs .active {
-  border-top: solid 1px black;
-  border-right: solid 1px black;
-  border-bottom: solid 1px black;
+  border-top: solid 1px silver;
+  border-right: solid 1px silver;
+  border-bottom: solid 1px silver;
   border-left: solid 1px white;
   background-color: white;
 }
