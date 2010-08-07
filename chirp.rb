@@ -117,14 +117,14 @@ EventMachine.run do
             # push unread tweets
             q = TokyoTyrant::RDBQRY.new(db)
             q.setorder '', TokyoTyrant::RDBQRY::QONUMASC
-            q.search.each do |key|
+            channel.push(q.search.map {|key|
               value = db.get(key)
-              channel.push({
+              {
                 :tab_id => value['tab_id'],
                 :data => JSON.parse(value['data']),
                 :html => value['html'],
-              }.to_json)
-            end
+              }
+            }.to_json)
           else
             ws.send 'failure'
           end
@@ -165,7 +165,7 @@ EventMachine.run do
       tab_id = matched_tab ? matched_tab[:id] : 0
 
       html = to_html(data)
-      channel.push({ :tab_id => tab_id, :data => data, :html => html, }.to_json)
+      channel.push([{ :tab_id => tab_id, :data => data, :html => html, }].to_json)
       db.put id, { 'tab_id' => tab_id, 'data' => item, :html => html, }
     end
   end

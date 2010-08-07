@@ -188,11 +188,13 @@ $(function() {
       ws.onmessage = function(e) {
         if(e.data == 'success') {
           ws.onmessage = function(e) {
-            var tweet = eval('(' + e.data + ')');
-            var tab = tabs[tweet.tab_id];
-            tab.tweets.push(tweet);
-            updateUnreadCount(tab, tab.unreadCount + 1);
-            prependTweet(tweet);
+            var tweets = eval('(' + e.data + ')');
+            tweets.forEach(function(tweet) {
+              var tab = tabs[tweet.tab_id];
+              tab.tweets.push(tweet);
+              updateUnreadCount(tab, tab.unreadCount + 1);
+              prependTweet(tweet);
+            });
           };
           ws.onclose = function() {
             connectWebSocket(passwordHash);
