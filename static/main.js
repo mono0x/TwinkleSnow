@@ -84,6 +84,7 @@ $(function() {
           var tweet = tweets[i];
           if(tweet.data.id <= read) {
             $('#tweet-' + tweet.data.id).addClass('read');
+            $('div[id^="reply-' + tweet.data.id + '"]').addClass('read');
           }
         }
       }
@@ -127,7 +128,38 @@ $(function() {
     var id = data.id;
 
     var view = $('#views > #view-' + tweet.tab_id);
-    view.prepend(tweet.html);
+    var element = $('<div />')
+      .attr({ 'id' : 'tweet-' + tweet.data.id })
+      .append(tweet.html);
+    view.prepend(element);
+
+    var inserted = false;
+    var insertTarget = element;
+    var inReplyToStatusId = data.in_reply_to_status_id;
+    while(inReplyToStatusId) {
+      console.log(inReplyToStatusId);
+      var reply = null;
+      for(var i = 0, n = tabs.length; i < n; ++i) {
+        reply = tabs[i].tweets.find(function(tweet) {
+          return inReplyToStatusId == tweet.data.id;
+        });
+        if(reply != null) {
+          break;
+        }
+      }
+      if(reply == null) {
+        break;
+      }
+      var element = $('<div />')
+          .append(reply.html)
+          .attr({ 'id' : 'reply-' + tweet.data.id + '-' + reply.data.id})
+          .addClass('reply');
+      insertTarget.after(element);
+      insertTarget = element;
+      inReplyToStatusId = reply.data.in_reply_to_status_id;
+      inserted = true;
+    }
+
     var visible = view.is(':visible');
     if(!visible) {
       view.show();
@@ -230,6 +262,13 @@ $(function() {
     });
     return false;
   });
+  $('a[href="#open-reply"]').live('click', function() {
+    var tweet = getTweetFromAnchor(this);
+    var replies = $('div[id^="reply-' + tweet.data.id + '"]');
+    if(replies.length > 0) {
+      replies.toggle();
+    }
+  });
 
   $('input').keypress(function(e) {
     e.stopPropagation();
@@ -241,7 +280,8 @@ $(function() {
       {
         var te = findTweetAndElementOnTop();
         if(te) {
-          var next = te.element.next();
+          var next = te.element.nextAll('div[id^="tweet-"]').eq(0);
+          console.log(next);
           if(next.length > 0) {
             $.scrollTo(next, 0);
           }
@@ -254,7 +294,8 @@ $(function() {
       {
         var te = findTweetAndElementOnTop();
         if(te) {
-          var prev = te.element.prev();
+          var prev = te.element.prevAll('div[id^="tweet-"]').eq(0);
+          console.log(prev);
           if(prev.length > 0) {
             $.scrollTo(prev, 0);
           }

@@ -39,13 +39,18 @@ body {
   margin-bottom: 16px;
 }
 
+#views > div > div.reply {
+  width: 552px;
+  margin-left: 32px;
+}
+
 #views > div > div:not(:last-child) {
   padding-bottom: 16px;
   border-bottom: 1px solid #eee;
 }
 
 #views .content {
-  width: 528px;
+  width: auto;
   margin-left: 56px;
 }
 

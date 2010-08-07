@@ -40,6 +40,8 @@ def to_html(data)
   screen_name = user['screen_name']
   text = status['text']
   created_at = Time.parse(status['created_at'])
+  in_reply_to_status_id = status['in_reply_to_status_id']
+  in_reply_to_screen_name = status['in_reply_to_screen_name']
 
   content = text.gsub(TEXT_RE) do
     case
@@ -51,35 +53,38 @@ def to_html(data)
   end
 
   <<-"EOS"
-  <div id="tweet-#{data['id']}">
-    <div class="content">
-      <div class="text">
-        <span class="screen_name">#{screen_name}</span> #{content}
-      </div>
+  <div class="content">
+    <div class="text">
+      <span class="screen_name">#{screen_name}</span> #{content}
+    </div>
+    #{
+      if retweet
+        <<-"EOS"
+        <div class="retweet">
+          Retweeted by <a href="http://twitter.com/#{data['user']['screen_name']}">#{data['user']['screen_name']}</a>
+        </div>
+        EOS
+      end
+    }
+    <div class="information">
       #{
-        if retweet
-          <<-"EOS"
-          <div class="retweet">
-            Retweeted by <a href="http://twitter.com/#{data['user']['screen_name']}">#{data['user']['screen_name']}</a>
-          </div>
-          EOS
+        if in_reply_to_status_id
+          "To <a href=\"http://twitter.com/#{in_reply_to_screen_name}/status/#{in_reply_to_status_id}\">#{in_reply_to_screen_name}</a> |"
         end
       }
-      <div class="information">
-        <a target="_blank" href="http://twitter.com/#{screen_name}/status/#{id}">#{created_at.strftime('%m/%d %H:%M')}</a>
-        via
-        #{status['source']}
-        |
-        <a target="_blank" href="http://twitter.com/?status=@#{screen_name}&in_reply_to_status_id=#{id}&in_reply_to=#{screen_name}">Reply</a>
-        <a href="#retweet">Retweet</a>
-        <a target="_blank" href="http://twitter.com/?status= RT @#{screen_name}: #{text}">RT</a>
-        <a href="#unfollow">Unfollow</a>
-        <a href="#fav">Fav</a>
-      </div>
+      <a target="_blank" href="http://twitter.com/#{screen_name}/status/#{id}">#{created_at.strftime('%m/%d %H:%M')}</a>
+      via
+      #{status['source']}
+      |
+      <a target="_blank" href="http://twitter.com/?status=@#{screen_name}&in_reply_to_status_id=#{id}&in_reply_to=#{screen_name}">Reply</a>
+      <a href="#retweet">Retweet</a>
+      <a target="_blank" href="http://twitter.com/?status= RT @#{screen_name}: #{text}">RT</a>
+      <a href="#unfollow">Unfollow</a>
+      <a href="#fav">Fav</a>
     </div>
-    <div class="icon">
-      <img width="48" height="48" src="#{user['profile_image_url']}" />
-    </div>
+  </div>
+  <div class="icon">
+    <img width="48" height="48" src="#{user['profile_image_url']}" />
   </div>
   EOS
 end
