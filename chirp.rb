@@ -92,7 +92,7 @@ def to_html(data)
     <div class="information">
       #{
         if in_reply_to_status_id
-          "To <a href=\"http://twitter.com/#{in_reply_to_screen_name}/status/#{in_reply_to_status_id}\">#{in_reply_to_screen_name}</a> |"
+          "To <a target=\"_blank\" href=\"http://twitter.com/#{in_reply_to_screen_name}/status/#{in_reply_to_status_id}\">#{in_reply_to_screen_name}</a> |"
         end
       }
       <a target="_blank" href="http://twitter.com/#{screen_name}/status/#{id}">#{created_at.strftime('%m/%d %H:%M')}</a>
