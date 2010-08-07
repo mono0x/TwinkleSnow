@@ -110,18 +110,6 @@ $(function() {
   });
 
   var prependTweet = function(tweet) {
-    var convertDate = function(jsonDate) {
-      var re = /^(.+) (.+) (..) (..):(..):(..) (.+) (.+)$/;
-      var pattern = "$2 $3, $8 $4:$5:$6 UTC+0000";
-      var d = new Date(jsonDate.replace(re, pattern));
-      var month = d.getMonth() + 1;
-      var date = d.getDate();
-      var hours = d.getHours();
-      var minutes = d.getMinutes();
-      minutes = minutes < 10 ? '0' + minutes : minutes;
-      return month + '/' + date + ' ' + hours + ':' + minutes;
-    }
-
     var data = tweet.data;
     var user = data.user;
     var screen_name = user.screen_name;
@@ -263,13 +251,6 @@ $(function() {
     $.getJSON('/api/create_favorite/' + tweet.data.user.id, {}, function(data) {
     });
     return false;
-  });
-  $('a[href="#open-reply"]').live('click', function() {
-    var tweet = getTweetFromAnchor(this);
-    var replies = $('div[id^="reply-' + tweet.data.id + '"]');
-    if(replies.length > 0) {
-      replies.toggle();
-    }
   });
 
   $('input').keypress(function(e) {
