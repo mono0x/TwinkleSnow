@@ -74,6 +74,10 @@ def to_html(data)
     end
   end
 
+  source = status['source'].gsub(%r!^<a href="(.+)" rel="nofollow">(.+)</a>$!) {
+    %!<a target="_blank" href="#$1">#$2</a>!
+  }
+
   <<-"EOS"
   <div class="content">
     <div class="text">
@@ -97,7 +101,7 @@ def to_html(data)
       }
       <a target="_blank" href="http://twitter.com/#{screen_name}/status/#{id}">#{created_at.strftime('%m/%d %H:%M')}</a>
       via
-      #{status['source']}
+      #{source}
       |
       <a target="_blank" href="http://twitter.com/?status=@#{screen_name}&in_reply_to_status_id=#{id}&in_reply_to=#{screen_name}">Reply</a>
       <a href="#retweet">Retweet</a>
