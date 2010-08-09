@@ -125,7 +125,6 @@ $(function() {
     var insertTarget = element;
     var inReplyToStatusId = data.in_reply_to_status_id;
     while(inReplyToStatusId) {
-      console.log(inReplyToStatusId);
       var reply = null;
       for(var i = 0, n = tabs.length; i < n; ++i) {
         reply = tabs[i].tweets.find(function(tweet) {
@@ -264,7 +263,6 @@ $(function() {
         var te = findTweetAndElementOnTop();
         if(te) {
           var next = te.element.nextAll('div[id^="tweet-"]').eq(0);
-          console.log(next);
           if(next.length > 0) {
             $.scrollTo(next, 0);
           }
@@ -278,7 +276,6 @@ $(function() {
         var te = findTweetAndElementOnTop();
         if(te) {
           var prev = te.element.prevAll('div[id^="tweet-"]').eq(0);
-          console.log(prev);
           if(prev.length > 0) {
             $.scrollTo(prev, 0);
           }
