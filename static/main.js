@@ -79,14 +79,19 @@ $(function() {
         $('#tab-' + currentTab.id).removeClass('active');
         updateRead();
         var read = currentTab.read;
-        var tweets = currentTab.tweets;
-        for(var i = 0, n = tweets.length; i < n; ++i) {
-          var tweet = tweets[i];
-          if(tweet.data.id <= read) {
-            $('#tweet-' + tweet.data.id).addClass('read');
-            $('div[id^="reply-' + tweet.data.id + '"]').addClass('read');
+        $.each($('#view-' + currentTab.id + ' div[id^="tweet-"]:not(.read)').get().reverse(), function(i, e) {
+          var element = $(e);
+          if(element.attr('id').match(/^tweet-(\d+)$/)) {
+            var id = parseInt(RegExp.$1);
+            if(id <= read) {
+              element.addClass('read');
+              $('div[id^="reply-' + id + '"]').addClass('read');
+            }
+            else {
+              return false;
+            }
           }
-        }
+        });
       }
       currentTab = tabs.find(function(t) { return t.name == name; });
       var viewId = '#view-' + currentTab.id;
