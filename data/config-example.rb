@@ -15,6 +15,12 @@
   :consumer_token => '',
   :consumer_secret => '',
 }
+# @im_kayac = nil
+@im_kayac = {
+  :user_name => '',
+  :handler => '',
+  :secret_key => '',
+}
 @block = {
   :screen_names => [
   ],

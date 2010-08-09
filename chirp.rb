@@ -4,6 +4,7 @@ require 'uri'
 require 'logger'
 require 'eventmachine'
 require 'em-websocket'
+require 'em-http'
 require 'twitter/json_stream'
 require 'json'
 require 'digest/sha1'
@@ -187,6 +188,19 @@ EventMachine.run do
       block = config.block
       next if block[:words].any? {|w| text =~ w}
       next if block[:screen_names].any? {|n| screen_name == n}
+
+      if text =~ /@#{basic_auth[:account]}/
+        im_kayac = config.im_kayac
+        if im_kayac
+          message = "#{screen_name}: #{text}"
+          signature = Digest::SHA1.hexdigest("#{message}#{im_kayac[:secret_key]}") 
+          EventMachine::HttpRequest.new("http://im.kayac.com/api/post/#{im_kayac[:user_name]}").post(:body => {
+            :message => message,
+            :handler => im_kayac[:handler],
+            :sig => signature,
+          })
+        end
+      end
 
       matched_tab = config.tabs.find {|tab| tab[:users].any? {|u| u == screen_name}}
       tab_id = matched_tab ? matched_tab[:id] : 0
