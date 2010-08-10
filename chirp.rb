@@ -61,7 +61,21 @@ def to_html(data)
       <<-"EOS"
       <a target="_blank" href="http://movapic.com/pic/#$1">
         <img src="http://image.movapic.com/pic/m_#$1.jpeg"
-             width="400" height="300" />
+           width="200" height="150" />
+      </a>
+      EOS
+    when /http:\/\/www\.nicovideo\.jp\/watch\/sm(\d+)/
+      <<-"EOS"
+      <a target="_blank" href="http://www.nicovideo.jp/watch/#$1">
+        <img src="http://tn-skr2.smilevideo.jp/smile?i=#$1"
+          width="200" height="150" />
+      </a>
+      EOS
+    when /http:\/\/nico\.ms\/sm(\d+)/
+      <<-"EOS"
+      <a target="_blank" href="http://www.nicovideo.jp/watch/#$1">
+        <img src="http://tn-skr2.smilevideo.jp/smile?i=#$1"
+          width="200" height="150" />
       </a>
       EOS
   end
