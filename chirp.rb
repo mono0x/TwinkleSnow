@@ -70,6 +70,12 @@ def to_html(data)
         <img src="http://img.f.hatena.ne.jp/images/fotolife/#$1/#$1#$2/#$3/#$3#{$4}_120.jpg" />
       </a>
       EOS
+    when %r!(http://tweetphoto\.com/\d+)!
+      <<-"EOS"
+      <a target="_blank" href="#$1">
+        <img src="http://tweetphotoapi.com/api/TPAPI.svc/imagefromurl?size=thumbnail&url=#$1" />
+      </a>
+      EOS
     when %r!http://(?:www\.nicovideo\.jp/watch/|nico\.ms/)sm(\d+)!
       <<-"EOS"
       <a target="_blank" href="http://www.nicovideo.jp/watch/#$1">
