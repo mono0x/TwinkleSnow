@@ -64,6 +64,12 @@ def to_html(data)
            width="200" height="150" />
       </a>
       EOS
+    when %r!http://f\.hatena\.ne\.jp/([A-Za-z0-9])([A-Za-z0-9\-]*)/(\d{8})(\d+)!
+      <<-"EOS"
+      <a target="_blank" href="http://f.hatena.ne.jp/#$1#$2/#$3#$4">
+        <img src="http://img.f.hatena.ne.jp/images/fotolife/#$1/#$1#$2/#$3/#$3#{$4}_120.jpg" />
+      </a>
+      EOS
     when %r!http://(?:www\.nicovideo\.jp/watch/|nico\.ms/)sm(\d+)!
       <<-"EOS"
       <a target="_blank" href="http://www.nicovideo.jp/watch/#$1">
