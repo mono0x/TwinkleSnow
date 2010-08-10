@@ -64,17 +64,17 @@ def to_html(data)
            width="200" height="150" />
       </a>
       EOS
-    when %r!http://www\.nicovideo\.jp/watch/sm(\d+)!
+    when %r!http://(?:www\.nicovideo\.jp/watch/|nico\.ms/)sm(\d+)!
       <<-"EOS"
       <a target="_blank" href="http://www.nicovideo.jp/watch/#$1">
         <img src="http://tn-skr2.smilevideo.jp/smile?i=#$1"
           width="200" height="150" />
       </a>
       EOS
-    when %r!http://nico\.ms/sm(\d+)!
+    when %r!http://(?:www\.youtube\.com/watch\?.*v=|youtu\.be/)([A-Za-z0-9]+)!
       <<-"EOS"
-      <a target="_blank" href="http://www.nicovideo.jp/watch/#$1">
-        <img src="http://tn-skr2.smilevideo.jp/smile?i=#$1"
+      <a target="_blank" href="http://www.youtube.com/watch?v=#$1">
+        <img src="http://i.ytimg.com/vi/#$1/3.jpg"
           width="200" height="150" />
       </a>
       EOS
