@@ -142,7 +142,7 @@ EventMachine.run do
   EventMachine.defer do
     log.info 'server start'
 
-    EM::WebSocket.start(:host => '0.0.0.0', :port => 13001) do |ws|
+    EM::WebSocket.start(:host => '0.0.0.0', :port => config.web_socket[:port]) do |ws|
       ws.onopen do
         sid = nil
         server_random = Digest::SHA1.hexdigest(rand.to_s)
