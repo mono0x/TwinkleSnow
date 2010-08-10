@@ -45,33 +45,33 @@ def to_html(data)
   in_reply_to_screen_name = status['in_reply_to_screen_name']
 
   image_preview = case text
-    when /http:\/\/twitpic\.com\/(\w+)/
+    when %r!http://twitpic\.com/(\w+)!
       <<-"EOS"
       <a target="_blank" href="http://twitpic.com/#$1">
         <img src="http://twitpic.com/show/thumb/#$1" />
       </a>
       EOS
-    when /http:\/\/yfrog\.com\/(\w+)/
+    when %r!http://yfrog\.com/(\w+)!
       <<-"EOS"
       <a target="_blank" href="http://yfrog.com/#$1">
         <img src="http://yfrog.com/#$1.th.jpg" />
       </a>
       EOS
-    when /http:\/\/movapic\.com\/pic\/(\w+)/
+    when %r!http://movapic\.com/pic/(\w+)!
       <<-"EOS"
       <a target="_blank" href="http://movapic.com/pic/#$1">
         <img src="http://image.movapic.com/pic/m_#$1.jpeg"
            width="200" height="150" />
       </a>
       EOS
-    when /http:\/\/www\.nicovideo\.jp\/watch\/sm(\d+)/
+    when %r!http://www\.nicovideo\.jp/watch/sm(\d+)!
       <<-"EOS"
       <a target="_blank" href="http://www.nicovideo.jp/watch/#$1">
         <img src="http://tn-skr2.smilevideo.jp/smile?i=#$1"
           width="200" height="150" />
       </a>
       EOS
-    when /http:\/\/nico\.ms\/sm(\d+)/
+    when %r!http://nico\.ms/sm(\d+)!
       <<-"EOS"
       <a target="_blank" href="http://www.nicovideo.jp/watch/#$1">
         <img src="http://tn-skr2.smilevideo.jp/smile?i=#$1"
@@ -82,9 +82,9 @@ def to_html(data)
 
   content = text.gsub(TEXT_RE) do
     case
-    when $1 then "<a target=\"_blank\" href=\"http://twitter.com/#$2\">#$1</a>"
-    when $3 then "<a target=\"_blank\" href=\"http://search.twitter.com/search?q=%23#$4\">#$3</a>"
-    when $5 then "<a target=\"_blank\" href=\"#$5\">#$5</a>"
+    when $1 then %!<a target="_blank" href="http://twitter.com/#$2">#$1</a>!
+    when $3 then %!<a target="_blank" href="http://search.twitter.com/search?q=%23#$4">#$3</a>!
+    when $5 then %!<a target="_blank" href="#$5">#$5</a>!
     when $6 then '<br />'
     end
   end
@@ -100,18 +100,20 @@ def to_html(data)
     </div>
     #{
       if retweet
-        <<-"EOS"
-        <div class="retweet">
+        %!<div class="retweet">
           Retweeted by <a href="http://twitter.com/#{data['user']['screen_name']}">#{data['user']['screen_name']}</a>
-        </div>
-        EOS
+        </div>!
       end
     }
-    #{ "<div class=\"image-preview\">#{image_preview}</div>" if image_preview }
+    #{
+      if image_preview
+        %!<div class="image-preview">#{image_preview}</div>!
+      end
+    }
     <div class="information">
       #{
         if in_reply_to_status_id
-          "To <a target=\"_blank\" href=\"http://twitter.com/#{in_reply_to_screen_name}/status/#{in_reply_to_status_id}\">#{in_reply_to_screen_name}</a> |"
+          %!To <a target="_blank" href="http://twitter.com/#{in_reply_to_screen_name}/status/#{in_reply_to_status_id}">#{in_reply_to_screen_name}</a> |!
         end
       }
       <a target="_blank" href="http://twitter.com/#{screen_name}/status/#{id}">#{created_at.strftime('%m/%d %H:%M')}</a>
