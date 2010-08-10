@@ -126,11 +126,11 @@ body {
 }
 
 #tabs li {
-  width: 190px;
+  width: 189px;
   list-style-type: none;
   text-indent: 0;
   line-height: 200%;
-  margin: 0;
+  margin-right: 1px;
   padding: 0 4px;
   border-top: solid 1px white;
   border-right: solid 1px white;
