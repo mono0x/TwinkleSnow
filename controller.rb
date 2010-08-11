@@ -10,6 +10,22 @@ require './configloader'
 
 class ControllerBase < Ramaze::Controller
   @@config = ConfigLoader.load_file('data/config.rb')
+
+  private
+
+  def create_twitter
+    begin
+      oauth = Twitter::OAuth.new(
+        @@config.oauth[:consumer_token],
+        @@config.oauth[:consumer_secret])
+      oauth.authorize_from_access(
+        session[:access_token],
+        session[:access_token_secret])
+      Twitter::Base.new(oauth)
+    rescue Twitter::Unauthorized => e
+      nil
+    end
+  end
 end
 
 class MainController < ControllerBase
@@ -17,18 +33,13 @@ class MainController < ControllerBase
   engine :Erubis
 
   def index
-    user = nil
-    if session[:user]
-      user = JSON.parse(session[:user])
-      unless user['screen_name'] == @@config.basic_auth[:account]
-        redirect '/error/auth'
-      end
-    else
+    unless session[:screen_name] == @@config.basic_auth[:account]
       redirect '/oauth/request_token'
     end
     @tabs = @@config.tabs
     @web_socket = @@config.web_socket
-    @user = user
+    twitter = create_twitter
+    @user = twitter.verify_credentials
   end
 
 end
@@ -70,7 +81,7 @@ class OAuthController < ControllerBase
       credentials = twitter.verify_credentials
       session[:access_token] = access_token.token
       session[:access_token_secret] = access_token.secret
-      session[:user] = credentials.to_json
+      session[:screen_name] = credentials.screen_name
       redirect '/'
     rescue Twitter::Unauthorized => e
     end
@@ -90,8 +101,7 @@ class APIController < ControllerBase
   map '/api'
 
   def retweet(tweet_id)
-    user = JSON.parse(session[:user])
-    unless user['screen_name'] == @@config.basic_auth[:account]
+    unless session[:screen_name] == @@config.basic_auth[:account]
       return failure
     end
     twitter = create_twitter
@@ -101,8 +111,7 @@ class APIController < ControllerBase
   end
 
   def unfollow(user_id)
-    user = JSON.parse(session[:user])
-    unless user['screen_name'] == @@config.basic_auth[:account]
+    unless session[:screen_name] == @@config.basic_auth[:account]
       return failure
     end
     twitter = create_twitter
@@ -112,8 +121,7 @@ class APIController < ControllerBase
   end
 
   def create_favorite(tweet_id)
-    user = JSON.parse(session[:user])
-    unless user['screen_name'] == @@config.basic_auth[:account]
+    unless session[:screen_name] == @@config.basic_auth[:account]
       return failure
     end
     twitter = create_twitter
@@ -123,8 +131,7 @@ class APIController < ControllerBase
   end
 
   def read(tab_id, tweet_id)
-    user = JSON.parse(session[:user])
-    unless user['screen_name'] == @@config.basic_auth[:account]
+    unless session[:screen_name] == @@config.basic_auth[:account]
       return failure
     end
     tt = @@config.tokyo_tyrant
@@ -152,20 +159,6 @@ class APIController < ControllerBase
 
   def failure(hash = {})
     make_result 'failure', hash
-  end
-
-  def create_twitter
-    begin
-      oauth = Twitter::OAuth.new(
-        @@config.oauth[:consumer_token],
-        @@config.oauth[:consumer_secret])
-      oauth.authorize_from_access(
-        session[:access_token],
-        session[:access_token_secret])
-      Twitter::Base.new(oauth)
-    rescue Twitter::Unauthorized => e
-      nil
-    end
   end
 
 end

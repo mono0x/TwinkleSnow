@@ -3,14 +3,196 @@
   <head>
     <meta charset="UTF-8" />
     <title>TwinkleSnow</title>
-    <link rel="stylesheet" type="text/css" href="/static/style.css" />
     <style type="text/css">
-      body {
-        background-color: #<%= @user['profile_background_color'] %>;
-        background-image: url(<%= @user['profile_background_image_url'] %>);
-        background-repeat: <%= @user['profile_background_tile'] ? 'repeat' : 'no-repeat' %>;
-        background-attachment: fixed;
+      a {
+        color: #<%= @user['profile_link_color'] %>;
+      }
 
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        background-color: #<%= @user['profile_background_color'] %>;
+        <% if @user['profile_use_background_image'] %>
+          background-image: url(<%= @user['profile_background_image_url'] %>);
+          background-repeat: <%= @user['profile_background_tile'] ? 'repeat' : 'no-repeat' %>;
+          background-attachment: fixed;
+        <% end %>
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      #container {
+        width: 800px;
+        height: 100%;
+        margin: 16px auto;
+        -webkit-border-radius: 8px;
+        color: #<%= @user['profile_text_color'] %>;
+        background-color: #<%= @user['profile_sidebar_fill_color'] %>;
+      }
+
+      #main {
+        width: 800px;
+        height: auto;
+        position: relative;
+      }
+
+      #views {
+        position: relative;
+        width: 600px;
+        border-right: solid 1px #<%= @user['profile_sidebar_border_color'] %>;
+        z-index: 1;
+      }
+
+      #views > div {
+        width: 584px;
+        margin: 0;
+        padding: 16px 8px;
+        -webkit-border-top-left-radius: 8px;
+        -webkit-border-bottom-left-radius: 8px;
+        background-color: white;
+      }
+
+      #views > div > div {
+        position: relative;
+        width: 584px;
+        min-height: 56px;
+        margin-bottom: 16px;
+      }
+
+      #views > div > div.reply {
+        width: 552px;
+        margin-left: 32px;
+      }
+
+      #views > div > div:not(:last-child) {
+        padding-bottom: 16px;
+        border-bottom: 1px solid #eee;
+      }
+
+      #views .content {
+        width: auto;
+        margin-left: 56px;
+      }
+
+      #views .text {
+        margin: 0;
+        line-height: 140%;
+        padding: 0 12px 4px 12px;
+        word-break: break-all;
+      }
+
+      #views .retweet {
+        color: gray;
+        font-size: 80%;
+        padding: 0 12px 4px 12px;
+      }
+
+      #views .information {
+        text-align: right;
+        vertical-align: bottom;
+        color: gray;
+        font-size: 80%;
+        padding: 0 12px 4px 12px;
+      }
+
+      #views .icon {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 48px;
+        height: 48px;
+        margin: 0;
+        padding: 4px;
+      }
+
+      #views .icon img {
+        margin: 0;
+      }
+
+      .screen_name {
+        color: black;
+        font-weight: bold;
+      }
+
+      #views .information a {
+        color: gray;
+      }
+
+      #views .read {
+        opacity: 0.5;
+      }
+
+      #navigation-container {
+        position: fixed;
+        width: 200px;
+        top: 16px;
+        padding-left: 600px;
+        background-color: white;
+        -webkit-border-radius: 8px;
+      }
+
+      #navigation {
+        position: relative;
+        width: 199px;
+        padding: 32px 0;
+        z-index: 2;
+        -webkit-border-top-right-radius: 6px;
+        -webkit-border-bottom-right-radius: 6px;
+        border-left: 1px solid #<%= @user['profile_sidebar_border_color'] %>;
+        background-color: #<%= @user['profile_sidebar_fill_color'] %>;
+      }
+
+      #tabs {
+        -webkit-padding-start: 0;
+        margin: 0;
+        margin-left: -1px;
+        padding: 0;
+      }
+
+      #tabs li {
+        width: 189px;
+        list-style-type: none;
+        text-indent: 0;
+        line-height: 200%;
+        margin-right: 1px;
+        padding: 0 4px;
+        background-color: #<%= @user['profile_sidebar_border_color'] %>;
+        border-top: 1px solid #<%= @user['profile_sidebar_fill_color'] %>;
+        border-right: 1px solid #<%= @user['profile_sidebar_fill_color'] %>;
+        border-bottom: 1px solid #<%= @user['profile_sidebar_fill_color'] %>;
+        border-left: 1px solid #<%= @user['profile_sidebar_border_color'] %>;
+        -webkit-border-top-right-radius: 8px;
+        -webkit-border-bottom-right-radius: 8px;
+      }
+
+      #tabs a {
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+        color: black;
+        text-decoration: none;
+      }
+
+      #tabs .active {
+        border-top: solid 1px #<%= @user['profile_sidebar_border_color'] %>;
+        border-right: solid 1px #<%= @user['profile_sidebar_border_color'] %>;
+        border-bottom: solid 1px #<%= @user['profile_sidebar_border_color'] %>;
+        border-left: solid 1px white;
+        background-color: white;
+      }
+
+      #tabs .unread {
+        font-size: 80%;
+      }
+
+      #tabs .has-unread a {
+        font-weight: bold;
       }
     </style>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>

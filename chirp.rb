@@ -108,7 +108,7 @@ def to_html(data)
   <<-"EOS"
   <div class="content">
     <div class="text">
-      <span class="screen_name">#{screen_name}</span> #{content}
+      <a target="_blank" class="screen_name" href="http://twitter.com/#{screen_name}">#{screen_name}</a> #{content}
     </div>
     #{
       if retweet
