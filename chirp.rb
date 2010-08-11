@@ -25,8 +25,8 @@ channel = EM::Channel.new
 tt = config.tokyo_tyrant
 db = tokyo_tyrant(tt[:host], tt[:port])
 
-REPLY_RE = /(@([A-Za-z0-9_]+))/
-HASHTAG_RE = /(#([A-Za-z0-9_]+))/
+REPLY_RE = /@([A-Za-z0-9_]+)/
+HASHTAG_RE = /#([A-Za-z0-9_]+)/
 URI_RE = /(#{URI.regexp([ 'http', 'https' ])})/
 BREAK_RE = /(\r\n)/
 
@@ -94,10 +94,10 @@ def to_html(data)
 
   content = text.gsub(TEXT_RE) do
     case
-    when $1 then %!<a target="_blank" href="http://twitter.com/#$2">#$1</a>!
-    when $3 then %!<a target="_blank" href="http://search.twitter.com/search?q=%23#$4">#$3</a>!
-    when $5 then %!<a target="_blank" href="#$5">#$5</a>!
-    when $6 then '<br />'
+    when $1 then %!@<a target="_blank" href="http://twitter.com/#$1">#$1</a>!
+    when $2 then %!<a target="_blank" href="http://search.twitter.com/search?q=%23#$2">\##$2</a>!
+    when $3 then %!<a target="_blank" href="#$3">#$3</a>!
+    when $4 then '<br />'
     end
   end
 
