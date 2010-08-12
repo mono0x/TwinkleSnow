@@ -83,7 +83,7 @@ def to_html(data)
           width="200" height="150" />
       </a>
       EOS
-    when %r!http://(?:www\.youtube\.com/watch\?.*v=|youtu\.be/)([A-Za-z0-9_]+)!
+    when %r!http://(?:www\.youtube\.com/watch\?.*v=|youtu\.be/)([A-Za-z0-9_-]+)!
       <<-"EOS"
       <a target="_blank" href="http://www.youtube.com/watch?v=#$1">
         <img src="http://i.ytimg.com/vi/#$1/3.jpg"
