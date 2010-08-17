@@ -157,6 +157,9 @@ $(function() {
       view.show();
     }
     var height = $('#tweet-' + data.id).outerHeight(true);
+    $('div[id^="reply-' + data.id + '"]').each(function() {
+      height += $(this).outerHeight(true);
+    });
     if(!visible) {
       view.hide();
     }
