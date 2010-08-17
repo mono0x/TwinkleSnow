@@ -113,7 +113,7 @@ def to_html(data)
     #{
       if retweet
         %!<div class="retweet">
-          Retweeted by <a href="http://twitter.com/#{data['user']['screen_name']}">#{data['user']['screen_name']}</a>
+          Retweeted by <a target="_blank" href="http://twitter.com/#{data['user']['screen_name']}">#{data['user']['screen_name']}</a>
         </div>!
       end
     }
