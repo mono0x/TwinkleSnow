@@ -264,67 +264,75 @@ $(function() {
     e.stopPropagation();
   });
 
+  var nextTweet = function() {
+    var te = findTweetAndElementOnTop();
+    if(te) {
+      var next = te.element.nextAll('div[id^="tweet-"]').eq(0);
+      if(next.length > 0) {
+        $.scrollTo(next, 0);
+      }
+    }
+  };
+
+  var prevTweet = function() {
+    var te = findTweetAndElementOnTop();
+    if(te) {
+      var prev = te.element.prevAll('div[id^="tweet-"]').eq(0);
+      if(prev.length > 0) {
+        $.scrollTo(prev, 0);
+      }
+    }
+  };
+
+  var prevTab = function() {
+    if(currentTab != null) {
+      var n = tabs.length;
+      var id = currentTab.id;
+      for(var i = 0; i < n - 1; ++i) {
+        id = (id + n - 1) % n;
+        var tab = tabs[id];
+        if(tab.unreadCount > 0) {
+          window.location.hash = '#tabs/' + tab.name;
+          return;
+        }
+      }
+    }
+  };
+
+  var nextTab = function() {
+    if(currentTab != null) {
+      var n = tabs.length;
+      var id = currentTab.id;
+      for(var i = 0; i < n - 1; ++i) {
+        id = (id + 1) % n;
+        var tab = tabs[id];
+        if(tab.unreadCount > 0) {
+          window.location.hash = '#tabs/' + tab.name;
+          return;
+        }
+      }
+    }
+  };
+
   $(document).keypress(function(e) {
     switch(e.keyCode) {
     case 106: // j
-      {
-        var te = findTweetAndElementOnTop();
-        if(te) {
-          var next = te.element.nextAll('div[id^="tweet-"]').eq(0);
-          if(next.length > 0) {
-            $.scrollTo(next, 0);
-          }
-        }
-      }
+      nextTweet();
       e.preventDefault();
       break;
 
     case 107: // k
-      {
-        var te = findTweetAndElementOnTop();
-        if(te) {
-          var prev = te.element.prevAll('div[id^="tweet-"]').eq(0);
-          if(prev.length > 0) {
-            $.scrollTo(prev, 0);
-          }
-        }
-      }
+      prevTweet();
       e.preventDefault();
       break;
 
     case 97: // a
-      {
-        if(currentTab != null) {
-          var n = tabs.length;
-          var id = currentTab.id;
-          for(var i = 0; i < n - 1; ++i) {
-            id = (id + n - 1) % n;
-            var tab = tabs[id];
-            if(tab.unreadCount > 0) {
-              window.location.hash = '#tabs/' + tab.name;
-              break;
-            }
-          }
-        }
-      }
+      prevTab();
       e.preventDefault();
       break;
 
     case 115: // s
-      {
-        if(currentTab != null) {
-          var n = tabs.length;
-          var id = currentTab.id;
-          for(var i = 0; i < n - 1; ++i) {
-            id = (id + 1) % n;
-            var tab = tabs[id];
-            if(tab.unreadCount > 0) {
-              window.location.hash = '#tabs/' + tab.name;
-              break;
-            }
-          }
-        }
-      }
+      nextTab();
       e.preventDefault();
       break;
 
