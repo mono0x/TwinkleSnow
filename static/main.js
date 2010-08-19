@@ -255,7 +255,7 @@ $(function() {
   });
   $('a[href="#fav"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
-    $.getJSON('/api/create_favorite/' + tweet.data.user.id, {}, function(data) {
+    $.getJSON('/api/create_favorite/' + tweet.data.id, {}, function(data) {
     });
     return false;
   });
