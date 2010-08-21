@@ -28,9 +28,9 @@ db = tokyo_tyrant(tt[:host], tt[:port])
 REPLY_RE = /@([A-Za-z0-9_]+)/
 HASHTAG_RE = /#([A-Za-z0-9_]+)/
 URI_RE = /(#{URI.regexp([ 'http', 'https' ])})/
-BREAK_RE = /(\r\n)/
+BREAK_RE = /(\n)/
 
-TEXT_RE = /#{REPLY_RE}|#{HASHTAG_RE}|#{URI_RE}|#{BREAK_RE}/
+TEXT_RE = /#{REPLY_RE}|#{HASHTAG_RE}|#{BREAK_RE}|#{URI_RE}/
 
 def to_html(data)
   retweet = data['retweeted_status']
@@ -96,8 +96,8 @@ def to_html(data)
     case
     when $1 then %!@<a target="_blank" href="http://twitter.com/#$1">#$1</a>!
     when $2 then %!<a target="_blank" href="http://search.twitter.com/search?q=%23#$2">\##$2</a>!
-    when $3 then %!<a target="_blank" href="#$3">#$3</a>!
-    when $4 then '<br />'
+    when $3 then '<br />'
+    when $4 then %!<a target="_blank" href="#$4">#$4</a>!
     end
   end
 
