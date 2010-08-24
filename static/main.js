@@ -128,9 +128,10 @@ $(function() {
 
     var view = $('#views > #view-' + tweet.tab_id);
 
-    view.prepend($('<div />')
+    var element = $('<div />')
       .attr({ id : 'tweet-' + tweet.data.id })
-      .append(tweet.html));
+      .append(tweet.html);
+    view.prepend(element);
 
     var insertTarget = element;
     var inReplyToStatusId = data.in_reply_to_status_id;
@@ -147,10 +148,10 @@ $(function() {
       if(!reply) {
         break;
       }
-      var element = $('<div />')
-          .append(reply.html)
-          .attr({ id : 'reply-' + tweet.data.id + '-' + reply.data.id})
-          .addClass('reply');
+      element = $('<div />')
+        .append(reply.html)
+        .attr({ id : 'reply-' + tweet.data.id + '-' + reply.data.id})
+        .addClass('reply');
       insertTarget.after(element);
       insertTarget = element;
       inReplyToStatusId = reply.data.in_reply_to_status_id;
