@@ -1,3 +1,4 @@
+(function($) {
 
 Array.prototype.find = function(cond) {
   for(var i = 0, n = this.length; i < n; ++i) {
@@ -54,11 +55,19 @@ $(function() {
       }
     }
     return null;
-  }
+  };
+
+  var sendReadId = function(tab) {
+    if(!tab) {
+      return;
+    }
+    var path = '/api/read/' + tab.id + '/' + tab.read;
+    $.getJSON(path, {}, function() {});
+  };
   
   var updateRead = function() {
     var te = findTweetAndElementOnTop();
-    if(te == null) {
+    if(!te) {
       return;
     }
     var tweet = te.tweet;
@@ -66,11 +75,9 @@ $(function() {
     var count = te.count;
     if(id > currentTab.read) {
       currentTab.read = id;
-      var path = '/api/read/' + currentTab.id + '/' + id;
-      $.getJSON(path, {}, function(data) {});
       updateUnreadCount(currentTab, count);
     }
-  }
+  };
 
   var updateHash = function() {
     if(window.location.hash.match(/^#tabs\/([a-z0-9\-]+)$/)) {
@@ -78,11 +85,12 @@ $(function() {
       if(currentTab != null) {
         $('#tab-' + currentTab.id).removeClass('active');
         updateRead();
+        sendReadId(currentTab);
         var read = currentTab.read;
         $.each($('#view-' + currentTab.id + ' div[id^="tweet-"]:not(.read)').get().reverse(), function(i, e) {
           var element = $(e);
           if(element.attr('id').match(/^tweet-(\d+)$/)) {
-            var id = parseInt(RegExp.$1);
+            var id = parseInt(RegExp.$1, 10);
             if(id <= read) {
               element.addClass('read');
               $('div[id^="reply-' + id + '"]').addClass('read');
@@ -91,6 +99,7 @@ $(function() {
               return false;
             }
           }
+          return true;
         });
       }
       currentTab = tabs.find(function(t) { return t.name == name; });
@@ -99,6 +108,7 @@ $(function() {
       $('#views > div:hidden' + viewId).show();
       $('#tab-' + currentTab.id).addClass('active');
       $.scrollTo(currentTab.scrollTop);
+      updateRead();
     }
   };
 
@@ -112,44 +122,40 @@ $(function() {
 
   $(window).scroll(function() {
     currentTab.scrollTop = $(window).scrollTop();
+    updateRead();
   });
 
   var prependTweet = function(tweet) {
     var data = tweet.data;
-    var user = data.user;
-    var screen_name = user.screen_name;
-    var id = data.id;
 
     var view = $('#views > #view-' + tweet.tab_id);
-    var element = $('<div />')
-      .attr({ 'id' : 'tweet-' + tweet.data.id })
-      .append(tweet.html);
-    view.prepend(element);
 
-    var inserted = false;
+    view.prepend($('<div />')
+      .attr({ id : 'tweet-' + tweet.data.id })
+      .append(tweet.html));
+
     var insertTarget = element;
     var inReplyToStatusId = data.in_reply_to_status_id;
     while(inReplyToStatusId) {
       var reply = null;
       for(var i = 0, n = tabs.length; i < n; ++i) {
-        reply = tabs[i].tweets.find(function(tweet) {
-          return inReplyToStatusId == tweet.data.id;
+        reply = tabs[i].tweets.find(function(t) {
+          return inReplyToStatusId == t.data.id;
         });
-        if(reply != null) {
+        if(reply) {
           break;
         }
       }
-      if(reply == null) {
+      if(!reply) {
         break;
       }
       var element = $('<div />')
           .append(reply.html)
-          .attr({ 'id' : 'reply-' + tweet.data.id + '-' + reply.data.id})
+          .attr({ id : 'reply-' + tweet.data.id + '-' + reply.data.id})
           .addClass('reply');
       insertTarget.after(element);
       insertTarget = element;
       inReplyToStatusId = reply.data.in_reply_to_status_id;
-      inserted = true;
     }
 
     var visible = view.is(':visible');
@@ -170,6 +176,7 @@ $(function() {
     }
   };
 
+  var connectionState = 0;
   var connectWebSocket = function(passwordHash) {
     var setMessage = function(text) {
       $('#auth > p').text(text);
@@ -177,12 +184,34 @@ $(function() {
 
     setMessage('connecting...');
 
-    var authorizeError = false;
     var ws = new WebSocket('ws://' + webSocket.host + ':' + webSocket.port);
     ws.onmessage = function(e) {
-      ws.onmessage = function(e) {
-        if(e.data == 'success') {
-          ws.onmessage = function(e) {
+      switch(connectionState) {
+        case 0:
+          {
+            var serverRandom = e.data;
+            var clientRandom = CybozuLabs.SHA1.calc(Math.random().toString());
+            ws.send(CybozuLabs.SHA1.calc(passwordHash + serverRandom + clientRandom) + ',' + clientRandom);
+            ++connectionState;
+          }
+          break;
+        case 1:
+          {
+            if(e.data == 'success') {
+              setInterval(function() {
+                updateRead();
+                sendReadId();
+              }, 5000);
+              ++connectionState;
+            }
+            else if(e.data == 'failure') {
+              setMessage('failure');
+              ws.close();
+            }
+          }
+          break;
+        case 2:
+          {
             var tweets = eval('(' + e.data + ')');
             tweets.forEach(function(tweet) {
               var tab = tabs[tweet.tab_id];
@@ -190,25 +219,30 @@ $(function() {
               updateUnreadCount(tab, tab.unreadCount + 1);
               prependTweet(tweet);
             });
-          };
-          ws.onclose = function() {
-            connectWebSocket(passwordHash);
-          };
-          $('#auth input[type="password"]').blur();
-          $('#auth').fadeOut(300);
-          $('#main').fadeIn(300);
-          setInterval(updateRead, 3000);
-        }
-        else if(e.data == 'failure') {
-          setMessage('failure');
-          ws.close();
-        }
-      };
-      var serverRandom = e.data;
-      var clientRandom = CybozuLabs.SHA1.calc(Math.random().toString());
-      ws.send(CybozuLabs.SHA1.calc(passwordHash + serverRandom + clientRandom) + ',' + clientRandom);
+            $('#auth input[type="password"]').blur();
+            $('#auth').fadeOut(300);
+            $('#main').fadeIn(300);
+          }
+          break;
+        default:
+          break;
+      }
     };
     ws.onclose = function() {
+      switch(connectionState) {
+        case 0:
+          break;
+        case 1:
+          break;
+        case 2:
+          {
+            connectionState = 0;
+            connectWebSocket(passwordHash);
+          }
+          break;
+        default:
+          break;
+      }
     };
     ws.onopen = function() {
     };
@@ -223,14 +257,14 @@ $(function() {
   var getTweetIdFromAnchor = function(anchor) {
     var id = $(anchor).parent().parent().parent().attr('id');
     if(id.match(/^tweet-(\d+)$/)) {
-      return parseInt(RegExp.$1);
+      return parseInt(RegExp.$1, 10);
     }
     return null;
   };
 
   var getTweetFromAnchor = function(anchor) {
     var id = getTweetIdFromAnchor(anchor);
-    if(id == null) {
+    if(!id) {
       return null;
     }
     var tweets = currentTab.tweets;
@@ -244,19 +278,19 @@ $(function() {
 
   $('a[href="#retweet"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
-    $.getJSON('/api/retweet/' + tweet.data.id, {}, function(data) {
+    $.getJSON('/api/retweet/' + tweet.data.id, {}, function() {
     });
     return false;
   });
   $('a[href="#unfollow"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
-    $.getJSON('/api/unfollow/' + tweet.data.user.id, {}, function(data) {
+    $.getJSON('/api/unfollow/' + tweet.data.user.id, {}, function() {
     });
     return false;
   });
   $('a[href="#fav"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
-    $.getJSON('/api/create_favorite/' + tweet.data.id, {}, function(data) {
+    $.getJSON('/api/create_favorite/' + tweet.data.id, {}, function() {
     });
     return false;
   });
@@ -337,7 +371,11 @@ $(function() {
       e.preventDefault();
       break;
 
+    default:
+      break;
     }
   });
 
 });
+
+})(jQuery);
