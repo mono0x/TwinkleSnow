@@ -130,21 +130,6 @@ class APIController < ControllerBase
     success
   end
 
-  def read(tab_id, tweet_id)
-    unless session[:screen_name] == @@config.basic_auth[:account]
-      return failure
-    end
-    tt = @@config.tokyo_tyrant
-    db = tokyo_tyrant(tt[:host], tt[:port])
-    q = TokyoTyrant::RDBQRY.new(db)
-    q.addcond 'tab_id', TokyoTyrant::RDBQRY::QCNUMEQ, tab_id.to_i.to_s
-    q.addcond '', TokyoTyrant::RDBQRY::QCNUMLE, tweet_id.to_i.to_s
-    res = q.search.each do |key|
-      db.delete key
-    end
-    success :tab_id => tab_id.to_i, :read => tweet_id.to_i
-  end
-
   private
 
   def make_result(result, h)

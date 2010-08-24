@@ -57,14 +57,6 @@ $(function() {
     return null;
   };
 
-  var sendReadId = function(tab) {
-    if(!tab) {
-      return;
-    }
-    var path = '/api/read/' + tab.id + '/' + tab.read;
-    $.getJSON(path, {}, function() {});
-  };
-  
   var updateRead = function() {
     var te = findTweetAndElementOnTop();
     if(!te) {
@@ -76,6 +68,13 @@ $(function() {
     if(id > currentTab.read) {
       currentTab.read = id;
       updateUnreadCount(currentTab, count);
+      if(ws) {
+        ws.send(JSON.stringify({
+          action : 'read',
+          tab_id : currentTab.id,
+          tweet_id : currentTab.read
+        }));
+      }
     }
   };
 
@@ -85,7 +84,6 @@ $(function() {
       if(currentTab != null) {
         $('#tab-' + currentTab.id).removeClass('active');
         updateRead();
-        sendReadId(currentTab);
         var read = currentTab.read;
         $.each($('#view-' + currentTab.id + ' div[id^="tweet-"]:not(.read)').get().reverse(), function(i, e) {
           var element = $(e);
@@ -177,6 +175,7 @@ $(function() {
   };
 
   var connectionState = 0;
+  var ws = null;
   var connectWebSocket = function(passwordHash) {
     var setMessage = function(text) {
       $('#auth > p').text(text);
@@ -184,7 +183,7 @@ $(function() {
 
     setMessage('connecting...');
 
-    var ws = new WebSocket('ws://' + webSocket.host + ':' + webSocket.port);
+    ws = new WebSocket('ws://' + webSocket.host + ':' + webSocket.port);
     ws.onmessage = function(e) {
       switch(connectionState) {
         case 0:
@@ -198,10 +197,6 @@ $(function() {
         case 1:
           {
             if(e.data == 'success') {
-              setInterval(function() {
-                updateRead();
-                sendReadId();
-              }, 5000);
               ++connectionState;
             }
             else if(e.data == 'failure') {
@@ -218,6 +213,7 @@ $(function() {
               tab.tweets.push(tweet);
               updateUnreadCount(tab, tab.unreadCount + 1);
               prependTweet(tweet);
+              updateRead();
             });
             $('#auth input[type="password"]').blur();
             $('#auth').fadeOut(300);
@@ -229,6 +225,7 @@ $(function() {
       }
     };
     ws.onclose = function() {
+      ws = null;
       switch(connectionState) {
         case 0:
           break;

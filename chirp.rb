@@ -162,27 +162,41 @@ EventMachine.run do
         ws.send server_random
 
         ws.onmessage do |m|
-          log.info "<#{sid}>: #{m}"
-          # auth
-          if m =~ /\A([0-9a-f]+),([0-9a-f]+)\z/ && authorize($1, $2, server_random, config.password)
-            sid = channel.subscribe do |m|
-              ws.send m
+          if sid
+            log.info "<#{sid}>: #{m}"
+            json = JSON.parse(m)
+            case json['action']
+            when 'read'
+              q = TokyoTyrant::RDBQRY.new(db)
+              q.addcond 'tab_id', TokyoTyrant::RDBQRY::QCNUMEQ, json['tab_id'].to_s
+              q.addcond '', TokyoTyrant::RDBQRY::QCNUMLE, json['tweet_id'].to_s
+              q.search.each do |key|
+                db.delete key
+              end
             end
-            log.info "#{sid} connected"
-            ws.send 'success'
-            # push unread tweets
-            q = TokyoTyrant::RDBQRY.new(db)
-            q.setorder '', TokyoTyrant::RDBQRY::QONUMASC
-            channel.push(q.search.map {|key|
-              value = db.get(key)
-              {
-                :tab_id => value['tab_id'],
-                :data => JSON.parse(value['data']),
-                :html => value['html'],
-              }
-            }.to_json)
           else
-            ws.send 'failure'
+            # auth
+            if m =~ /\A([0-9a-f]+),([0-9a-f]+)\z/ && authorize($1, $2, server_random, config.password)
+              sid = channel.subscribe do |m|
+                ws.send m
+              end
+              log.info "#{sid} connected"
+              ws.send 'success'
+              # push unread tweets
+              q = TokyoTyrant::RDBQRY.new(db)
+              q.setorder '', TokyoTyrant::RDBQRY::QONUMASC
+              p json = q.search.map {|key|
+                value = db.get(key)
+                {
+                  :tab_id => value['tab_id'],
+                  :data => JSON.parse(value['data']),
+                  :html => value['html'],
+                }
+              }.to_json
+              p ws.send json
+            else
+              ws.send 'failure'
+            end
           end
         end
 
