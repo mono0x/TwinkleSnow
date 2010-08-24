@@ -194,6 +194,7 @@ $(function() {
           ws.onclose = function() {
             connectWebSocket(passwordHash);
           };
+          $('#auth input[type="password"]').blur();
           $('#auth').fadeOut(300);
           $('#main').fadeIn(300);
           setInterval(updateRead, 3000);
