@@ -379,22 +379,22 @@ $(function() {
 
   $(document).keypress(function(e) {
     switch(e.keyCode) {
-    case 106: // j
+    case 'j'.charCodeAt(0):
       nextTweet();
       e.preventDefault();
       break;
 
-    case 107: // k
+    case 'k'.charCodeAt(0):
       prevTweet();
       e.preventDefault();
       break;
 
-    case 97: // a
+    case 'a'.charCodeAt(0):
       prevTab();
       e.preventDefault();
       break;
 
-    case 115: // s
+    case 's'.charCodeAt(0):
       nextTab();
       e.preventDefault();
       break;
