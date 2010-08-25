@@ -199,6 +199,9 @@ $(function() {
           {
             if(e.data == 'success') {
               ++connectionState;
+              $('#auth input[type="password"]').blur();
+              $('#auth').fadeOut(300);
+              $('#main').fadeIn(300);
             }
             else if(e.data == 'failure') {
               setMessage('failure');
@@ -214,11 +217,8 @@ $(function() {
               tab.tweets.push(tweet);
               updateUnreadCount(tab, tab.unreadCount + 1);
               prependTweet(tweet);
-              updateRead();
             });
-            $('#auth input[type="password"]').blur();
-            $('#auth').fadeOut(300);
-            $('#main').fadeIn(300);
+            updateRead();
           }
           break;
         default:
