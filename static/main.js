@@ -292,22 +292,34 @@ $(function() {
     return null;
   };
 
-  $('a[href="#retweet"]').live('click', function() {
-    var tweet = getTweetFromAnchor(this);
+  var retweet = function(tweet) {
     $.getJSON('/api/retweet/' + tweet.data.id, {}, function() {
     });
+  };
+
+  var unfollow = function(user) {
+    $.getJSON('/api/unfollow/' + user.id, {}, function() {
+    });
+  };
+
+  var createFavorite = function(tweet) {
+    $.getJSON('/api/create_favorite/' + tweet.data.id, {}, function() {
+    });
+  };
+
+  $('a[href="#retweet"]').live('click', function() {
+    var tweet = getTweetFromAnchor(this);
+    retweet(tweet);
     return false;
   });
   $('a[href="#unfollow"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
-    $.getJSON('/api/unfollow/' + tweet.data.user.id, {}, function() {
-    });
+    retweet(tweet.data.user);
     return false;
   });
   $('a[href="#fav"]').live('click', function() {
     var tweet = getTweetFromAnchor(this);
-    $.getJSON('/api/create_favorite/' + tweet.data.id, {}, function() {
-    });
+    createFavorite(tweet);
     return false;
   });
 
@@ -396,6 +408,27 @@ $(function() {
 
     case 's'.charCodeAt(0):
       nextTab();
+      e.preventDefault();
+      break;
+
+    case 'r'.charCodeAt(0):
+      if(currentTab.selectedIndex !== null) {
+        retweet(currentTab.tweets[currentTab.selectedIndex]);
+      }
+      e.preventDefault();
+      break;
+
+    case 'U'.charCodeAt(0):
+      if(currentTab.selectedIndex !== null) {
+        unfollow(currentTab.tweets[currentTab.selectedIndex].data.user);
+      }
+      e.preventDefault();
+      break;
+
+    case 'f'.charCodeAt(0):
+      if(currentTab.selectedIndex !== null) {
+        createFavorite(currentTab.tweets[currentTab.selectedIndex]);
+      }
       e.preventDefault();
       break;
 
