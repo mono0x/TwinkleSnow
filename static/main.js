@@ -156,7 +156,7 @@ $(function() {
           tweet = currentTab.tweets[currentTab.selectedIndex];
           te = $('#tweet-' + tweet.data.id);
           console.log(te.offset().top + te.outerHeight(true));
-          if(te.offset().top + te.outerHeight(true) - scrollTop < windowHeight) {
+          if(te.offset().top + te.outerHeight(true) - scrollTop <= windowHeight) {
             break;
           }
           ++currentTab.selectedIndex;
