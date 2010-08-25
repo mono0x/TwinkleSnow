@@ -133,6 +133,41 @@ $(function() {
 
   $(window).scroll(function() {
     currentTab.scrollTop = $(window).scrollTop();
+    if(currentTab.selectedIndex !== null) {
+      console.log('selectedIndex:' + currentTab.selectedIndex);
+      var skiped = true;
+      var scrollTop = $(window).scrollTop();
+      var tweet;
+      var te;
+      while(currentTab.selectedIndex > 0) {
+        tweet = currentTab.tweets[currentTab.selectedIndex];
+        te = $('#tweet-' + tweet.data.id);
+        console.log(te.offset().top - scrollTop);
+        if(te.offset().top - scrollTop >= 0) {
+          break;
+        }
+        --currentTab.selectedIndex;
+        skiped = false;
+      }
+      if(skiped) {
+        var windowHeight = $(window).height();
+        console.log('windowHeight:' + windowHeight);
+        while(currentTab.selectedIndex < currentTab.tweets.length - 1) {
+          tweet = currentTab.tweets[currentTab.selectedIndex];
+          te = $('#tweet-' + tweet.data.id);
+          console.log(te.offset().top + te.outerHeight(true));
+          if(te.offset().top + te.outerHeight(true) - scrollTop < windowHeight) {
+            break;
+          }
+          ++currentTab.selectedIndex;
+          skiped = false;
+        }
+      }
+      if(!skiped) {
+        updateSelected();
+        console.log('scrolled');
+      }
+    }
     updateRead();
   });
 
