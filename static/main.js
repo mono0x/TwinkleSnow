@@ -22,6 +22,7 @@ $(function() {
     tab.read = 0;
     tab.unreadCount = 0;
     tab.scrollTop = 0;
+    tab.selectedIndex = null;
     $('#views').append(
       $('<div />').attr({ id : 'view-' + tab.id }));
     $('#tabs').append(
@@ -55,6 +56,18 @@ $(function() {
       }
     }
     return null;
+  };
+
+  var updateSelected = function(tab) {
+    if(!tab) {
+      tab = currentTab;
+    }
+    var view = $('#views > #view-' + tab.id);
+    view.find('.selected').removeClass('selected');
+    if(tab.selectedIndex !== null) {
+      var tweet = tab.tweets[tab.selectedIndex];
+      view.find('#tweet-' + tweet.data.id).addClass('selected');
+    }
   };
 
   var updateRead = function() {
@@ -132,6 +145,11 @@ $(function() {
       .attr({ id : 'tweet-' + tweet.data.id })
       .append(tweet.html);
     view.prepend(element);
+
+    if(!tabs[tweet.tab_id].selectedIndex) {
+      tabs[tweet.tab_id].selectedIndex = 0;
+      updateSelected(tabs[tweet.tab_id]);
+    }
 
     var insertTarget = element;
     var inReplyToStatusId = data.in_reply_to_status_id;
@@ -298,23 +316,35 @@ $(function() {
   });
 
   var nextTweet = function() {
-    var te = findTweetAndElementOnTop();
-    if(te) {
-      var next = te.element.nextAll('div[id^="tweet-"]').eq(0);
-      if(next.length > 0) {
-        $.scrollTo(next, 0);
-      }
+    if(currentTab.selectedIndex === null) {
+      return;
     }
+    if(currentTab.selectedIndex == 0) {
+      return;
+    }
+    --currentTab.selectedIndex;
+    var tweet = currentTab.tweets[currentTab.selectedIndex];
+    var te = $('#tweet-' + tweet.data.id);
+    if(te.offset().top + te.outerHeight(true) - $(window).scrollTop() >= $(window).height()) {
+      $.scrollTo(te.offset().top + te.outerHeight(true) - $(window).height());
+    }
+    updateSelected();
   };
 
   var prevTweet = function() {
-    var te = findTweetAndElementOnTop();
-    if(te) {
-      var prev = te.element.prevAll('div[id^="tweet-"]').eq(0);
-      if(prev.length > 0) {
-        $.scrollTo(prev, 0);
-      }
+    if(currentTab.selectedIndex === null) {
+      return;
     }
+    if(currentTab.selectedIndex == currentTab.tweets.length - 1) {
+      return;
+    }
+    ++currentTab.selectedIndex;
+    var tweet = currentTab.tweets[currentTab.selectedIndex];
+    var te = $('#tweet-' + tweet.data.id);
+    if(te.offset().top - $(window).scrollTop() < 0) {
+      $.scrollTo(te);
+    }
+    updateSelected();
   };
 
   var prevTab = function() {
