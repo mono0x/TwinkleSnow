@@ -97,7 +97,7 @@ def to_html(data)
     when $1 then %!@<a target="_blank" href="http://twitter.com/#$1">#$1</a>!
     when $2 then %!<a target="_blank" href="http://search.twitter.com/search?q=%23#$2">\##$2</a>!
     when $3 then '<br />'
-    when $4 then %!<a target="_blank" href="#$4">#$4</a>!
+    when $4 then %!<a target="_blank" class="external" href="#$4">#$4</a>!
     end
   end
 
@@ -185,7 +185,7 @@ EventMachine.run do
               # push unread tweets
               q = TokyoTyrant::RDBQRY.new(db)
               q.setorder '', TokyoTyrant::RDBQRY::QONUMASC
-              p json = q.search.map {|key|
+              json = q.search.map {|key|
                 value = db.get(key)
                 {
                   :tab_id => value['tab_id'],
@@ -193,7 +193,7 @@ EventMachine.run do
                   :html => value['html'],
                 }
               }.to_json
-              p ws.send json
+              ws.send json
             else
               ws.send 'failure'
             end

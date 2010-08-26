@@ -9,6 +9,15 @@ Array.prototype.find = function(cond) {
   return null;
 };
 
+var openUri = function(uri) {
+  var a = document.createElement("a");
+  a.href = uri;
+  a.target = "_blank";
+  var e = document.createEvent("MouseEvents");
+  e.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 1, null);
+  a.dispatchEvent(e);
+};
+
 $(function() {
   if(!("WebSocket" in window)) {
     alert('WebSocket is not supported in this browser.');
@@ -419,6 +428,27 @@ $(function() {
     }
   };
 
+  var openExternalLink = function(openAll) {
+    if(currentTab === null) {
+      return;
+    }
+    if(currentTab.selectedIndex === null) {
+      return;
+    }
+    var tweet = currentTab.tweets[currentTab.selectedIndex];
+    var element = $('#tweet-' + tweet.data.id);
+    console.log(element.find('a.external'));
+    var externalLinks = element.find('a.external');
+    if(openAll) {
+      externalLinks.each(function() {
+        openUri($(this).attr('href'));
+      });
+    }
+    else if(externalLinks.size() > 0) {
+      openUri(externalLinks.eq(0).attr('href'));
+    }
+  };
+
   $(document).keypress(function(e) {
     switch(e.keyCode) {
     case 'j'.charCodeAt(0):
@@ -459,6 +489,16 @@ $(function() {
       if(currentTab.selectedIndex !== null) {
         createFavorite(currentTab.tweets[currentTab.selectedIndex]);
       }
+      e.preventDefault();
+      break;
+
+    case 'v'.charCodeAt(0):
+      openExternalLink();
+      e.preventDefault();
+      break;
+      
+    case 'V'.charCodeAt(0):
+      openExternalLink(true);
       e.preventDefault();
       break;
 
