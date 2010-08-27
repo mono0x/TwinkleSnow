@@ -1,8 +1,5 @@
+@account = ''
 @password = ''
-@basic_auth = {
-  :account => '',
-  :password => '',
-}
 @web_socket = {
   :host => '',
   :port => 1,
@@ -14,6 +11,8 @@
 @oauth = {
   :consumer_token => '',
   :consumer_secret => '',
+  :access_token => '',
+  :access_secret => '',
 }
 # @im_kayac = nil
 @im_kayac = {

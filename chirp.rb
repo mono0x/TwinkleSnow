@@ -5,20 +5,74 @@ require 'logger'
 require 'eventmachine'
 require 'em-websocket'
 require 'em-http'
+require 'oauth'
+require 'oauth/client/em_http'
 require 'twitter/json_stream'
 require 'json'
 require 'digest/sha1'
 require 'time'
+require 'twitter'
+require 'erubis'
+
+class EventMachine::HttpClient
+
+  def normalize_uri
+      @normalized_uri ||= begin
+        uri = @uri.dup
+        encoded_query = encode_query(@uri, @options[:query])
+        path, query = encoded_query.split("?", 2)
+        uri.query = query unless encoded_query.empty?
+        uri.path  = path
+        uri
+      end
+  end
+
+end
+
+class Twitter::JSONStream
+
+  def params
+    {}
+  end
+
+end
 
 require './configloader'
 require './model'
+
+def create_index_page(config)
+  oauth = Twitter::OAuth.new(config.oauth[:consumer_token], config.oauth[:consumer_secret])
+  oauth.authorize_from_access config.oauth[:access_token], config.oauth[:access_secret]
+  twitter = Twitter::Base.new(oauth)
+
+  user = twitter.verify_credentials
+
+  eruby = Erubis::Eruby.new(open('view/index.rhtml').read)
+
+  open('static/index.html', 'w') do |f|
+    f << eruby.result({
+      :user => user,
+      :web_socket => config.web_socket.to_json,
+    })
+  end
+end
 
 log = Logger.new(STDOUT)
 log.level = Logger::INFO
 
 config = ConfigLoader.load_file('data/config.rb')
 
-uri = URI.parse("http://chirpstream.twitter.com/2b/user.json")
+consumer = OAuth::Consumer.new(
+  config.oauth[:consumer_token],
+  config.oauth[:consumer_secret],
+  :site => 'http://twitter.com')
+
+access_token = OAuth::AccessToken.new(
+  consumer,
+  config.oauth[:access_token],
+  config.oauth[:access_secret])
+
+create_index_page config
 
 channel = EM::Channel.new
 
@@ -173,6 +227,24 @@ EventMachine.run do
               q.search.each do |key|
                 db.delete key
               end
+            when 'retweet'
+              id = json['id']
+              req = EventMachine::HttpRequest.new("http://api.twitter.com/1/statuses/retweet/#{id}.json")
+              http = req.post(:head => { 'Content-Type' => 'application/x-www-form-urlencoded' }) do |client|
+                consumer.sign! client, access_token
+              end
+            when 'unfollow'
+              user_id = json['user_id']
+              req = EventMachine::HttpRequest.new("http://api.twitter.com/1/friendships/destroy.json")
+              http = req.post(:body => { 'user_id' => user_id }, :head => { 'Content-Type' => 'application/x-www-form-urlencoded' }) do |client|
+                consumer.sign! client, access_token
+              end
+            when 'favorite'
+              id = json['id']
+              req = EventMachine::HttpRequest.new("http://api.twitter.com/1/favorites/create/#{id}.json")
+              http = req.post(:head => { 'Content-Type' => 'application/x-www-form-urlencoded' }) do |client|
+                consumer.sign! client, access_token
+              end
             end
           else
             # auth
@@ -181,7 +253,7 @@ EventMachine.run do
                 ws.send m
               end
               log.info "#{sid} connected"
-              ws.send 'success'
+              ws.send({ 'result' => 'success', 'tabs' => config.tabs }.to_json)
               # push unread tweets
               q = TokyoTyrant::RDBQRY.new(db)
               q.setorder '', TokyoTyrant::RDBQRY::QONUMASC
@@ -195,7 +267,7 @@ EventMachine.run do
               }.to_json
               ws.send json
             else
-              ws.send 'failure'
+              ws.send({ 'result' => 'failure' }.to_json)
             end
           end
         end
@@ -211,17 +283,22 @@ EventMachine.run do
     end
   end
 
-  basic_auth = config.basic_auth
+
   stream = Twitter::JSONStream.connect(
-    :host => uri.host,
-    :path => uri.path,
-    :auth => "#{basic_auth[:account]}:#{basic_auth[:password]}"
-  )
+    :host => 'betastream.twitter.com',
+    :path => '/2b/user.json',
+    :oauth => {
+      :consumer_key => config.oauth[:consumer_token],
+      :consumer_secret => config.oauth[:consumer_secret],
+      :access_key => config.oauth[:access_token],
+      :access_secret => config.oauth[:access_secret],
+    }) 
+
   log.info 'stream start'
 
   stream.each_item do |item|
     data = JSON.parse(item)
-    log.info data.inspect
+    log.info data 
     if data['text']
       id = data['id']
       text = data['text']
@@ -231,7 +308,7 @@ EventMachine.run do
       next if block[:words].any? {|w| text =~ w}
       next if block[:screen_names].any? {|n| screen_name == n}
 
-      if text =~ /@#{basic_auth[:account]}/
+      if text =~ /@#{config.account}/
         im_kayac = config.im_kayac
         if im_kayac
           message = "#{screen_name}: #{text}"
@@ -254,11 +331,11 @@ EventMachine.run do
   end
 
   stream.on_error do |m|
-    log.info m
+    log.error m
   end
 
   stream.on_max_reconnects do |timeout, retries|
-    log.info "max reconnects #{timeout} : #{retries}"
+    log.error "max reconnects #{timeout} : #{retries}"
   end
 
 end

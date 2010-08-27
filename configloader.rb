@@ -19,8 +19,8 @@ class ConfigLoader
    
   end
 
+  attr_reader :account
   attr_reader :password
-  attr_reader :basic_auth
   attr_reader :web_socket
   attr_reader :tokyo_tyrant
   attr_reader :im_kayac

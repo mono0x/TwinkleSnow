@@ -24,22 +24,10 @@ $(function() {
     return;
   }
 
+  var tabs = null;
+
   $('#main').hide();
   var currentTab = null;
-  tabs.forEach(function(tab) {
-    tab.tweets = [];
-    tab.read = 0;
-    tab.unreadCount = 0;
-    tab.scrollTop = 0;
-    tab.selectedIndex = null;
-    $('#views').append(
-      $('<div />').attr({ id : 'view-' + tab.id }));
-    $('#tabs').append(
-      $('<li />').attr({ id : 'tab-' + tab.id }).append(
-        $('<a />').attr({ href : '#tabs/' + tab.name }).append(
-          tab.name, ' ', $('<span />').addClass('unread').append(
-            '(', $('<span />').addClass('count').append('0'), ')'))));
-  });
 
   var updateUnreadCount = function(tab, count) {
     tab.unreadCount = count;
@@ -135,10 +123,6 @@ $(function() {
   $(window).bind('hashchange', function() {
     updateHash();
   });
-  if(!window.location.hash) {
-    window.location.hash = '#tabs/timeline';
-  }
-  updateHash();
 
   $(window).scroll(function() {
     currentTab.scrollTop = $(window).scrollTop();
@@ -254,13 +238,33 @@ $(function() {
           break;
         case 1:
           {
-            if(e.data == 'success') {
+            var json = JSON.parse(e.data);
+            if(json.result == 'success') {
+              tabs = json.tabs;
+              tabs.forEach(function(tab) {
+                tab.tweets = [];
+                tab.read = 0;
+                tab.unreadCount = 0;
+                tab.scrollTop = 0;
+                tab.selectedIndex = null;
+                $('#views').append(
+                  $('<div />').attr({ id : 'view-' + tab.id }));
+                $('#tabs').append(
+                  $('<li />').attr({ id : 'tab-' + tab.id }).append(
+                    $('<a />').attr({ href : '#tabs/' + tab.name }).append(
+                      tab.name, ' ', $('<span />').addClass('unread').append(
+                        '(', $('<span />').addClass('count').append('0'), ')'))));
+              });
+              if(!window.location.hash) {
+                window.location.hash = '#tabs/timeline';
+              }
+              updateHash();
               ++connectionState;
               $('#auth input[type="password"]').blur();
               $('#auth').fadeOut(300);
               $('#main').fadeIn(300);
             }
-            else if(e.data == 'failure') {
+            else {
               setMessage('failure');
               ws.close();
             }
@@ -332,18 +336,24 @@ $(function() {
   };
 
   var retweet = function(tweet) {
-    $.getJSON('/api/retweet/' + tweet.data.id, {}, function() {
-    });
+    ws.send(JSON.stringify({
+      action : 'retweet',
+      id : tweet.data.id
+    }));
   };
 
   var unfollow = function(user) {
-    $.getJSON('/api/unfollow/' + user.id, {}, function() {
-    });
+    ws.send(JSON.stringify({
+      action : 'unfollow',
+      user_id : user.id
+    }));
   };
 
   var createFavorite = function(tweet) {
-    $.getJSON('/api/create_favorite/' + tweet.data.id, {}, function() {
-    });
+    ws.send(JSON.stringify({
+      action : 'favorite',
+      id : tweet.data.id
+    }));
   };
 
   $('a[href="#retweet"]').live('click', function() {
