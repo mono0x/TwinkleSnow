@@ -306,7 +306,6 @@ EventMachine.run do
 
       block = config.block
       next if block[:words].any? {|w| text =~ w}
-      next if block[:screen_names].any? {|n| screen_name == n}
 
       if text =~ /@#{config.account}/
         im_kayac = config.im_kayac

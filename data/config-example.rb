@@ -21,8 +21,6 @@
   :secret_key => '',
 }
 @block = {
-  :screen_names => [
-  ],
   :words => [
   ],
 }
