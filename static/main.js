@@ -227,42 +227,24 @@ $(function() {
 
     ws = new WebSocket('ws://' + webSocket.host + ':' + webSocket.port);
     ws.onmessage = function(e) {
+      var json = JSON.parse(e.data);
       switch(connectionState) {
         case 0:
           {
-            var serverRandom = e.data;
+            var serverRandom = json.server_random;
             var clientRandom = CybozuLabs.SHA1.calc(Math.random().toString());
-            ws.send(CybozuLabs.SHA1.calc(passwordHash + serverRandom + clientRandom) + ',' + clientRandom);
+            var hash = CybozuLabs.SHA1.calc(passwordHash + serverRandom + clientRandom);
+            ws.send(JSON.stringify({
+              hash : hash,
+              client_random : clientRandom
+            }));
             ++connectionState;
           }
           break;
         case 1:
           {
-            var json = JSON.parse(e.data);
             if(json.result == 'success') {
-              tabs = json.tabs;
-              tabs.forEach(function(tab) {
-                tab.tweets = [];
-                tab.read = 0;
-                tab.unreadCount = 0;
-                tab.scrollTop = 0;
-                tab.selectedIndex = null;
-                $('#views').append(
-                  $('<div />').attr({ id : 'view-' + tab.id }));
-                $('#tabs').append(
-                  $('<li />').attr({ id : 'tab-' + tab.id }).append(
-                    $('<a />').attr({ href : '#tabs/' + tab.name }).append(
-                      tab.name, ' ', $('<span />').addClass('unread').append(
-                        '(', $('<span />').addClass('count').append('0'), ')'))));
-              });
-              if(!window.location.hash) {
-                window.location.hash = '#tabs/timeline';
-              }
-              updateHash();
               ++connectionState;
-              $('#auth input[type="password"]').blur();
-              $('#auth').fadeOut(300);
-              $('#main').fadeIn(300);
             }
             else {
               setMessage('failure');
@@ -272,8 +254,34 @@ $(function() {
           break;
         case 2:
           {
-            var tweets = eval('(' + e.data + ')');
-            tweets.forEach(function(tweet) {
+            tabs = json.tabs;
+            tabs.forEach(function(tab) {
+              tab.tweets = [];
+              tab.read = 0;
+              tab.unreadCount = 0;
+              tab.scrollTop = 0;
+              tab.selectedIndex = null;
+              $('#views').append(
+                $('<div />').attr({ id : 'view-' + tab.id }));
+              $('#tabs').append(
+                $('<li />').attr({ id : 'tab-' + tab.id }).append(
+                  $('<a />').attr({ href : '#tabs/' + tab.name }).append(
+                    tab.name, ' ', $('<span />').addClass('unread').append(
+                      '(', $('<span />').addClass('count').append('0'), ')'))));
+            });
+            if(!window.location.hash) {
+              window.location.hash = '#tabs/timeline';
+            }
+            updateHash();
+            ++connectionState;
+            $('#auth input[type="password"]').blur();
+            $('#auth').fadeOut(300);
+            $('#main').fadeIn(300);
+          }
+          break;
+        case 3:
+          {
+            json.tweets.forEach(function(tweet) {
               var tab = tabs[tweet.tab_id];
               tab.tweets.push(tweet);
               updateUnreadCount(tab, tab.unreadCount + 1);
@@ -294,6 +302,7 @@ $(function() {
         case 1:
           break;
         case 2:
+        case 3:
           {
             connectionState = 0;
             connectWebSocket(passwordHash);
