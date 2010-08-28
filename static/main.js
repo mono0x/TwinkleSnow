@@ -92,29 +92,26 @@ $(function() {
     if(window.location.hash.match(/^#tabs\/([a-z0-9\-]+)$/)) {
       var name = RegExp.$1;
       if(currentTab != null) {
-        $('#tab-' + currentTab.id).removeClass('active');
+        $('#tabs > li[data-tab-id="' + currentTab.id + '"]').removeClass('active');
+        $('#views > div[data-tab-id="' + currentTab.id + '"]').hide();
         updateRead();
         var read = currentTab.read;
-        $.each($('#view-' + currentTab.id + ' div[id^="tweet-"]:not(.read)').get().reverse(), function(i, e) {
+        $.each($('#views > div[data-tab-id="' + currentTab.id + '"] > div:not(.reply.read)').get().reverse(), function(i, e) {
           var element = $(e);
-          if(element.attr('id').match(/^tweet-(\d+)$/)) {
-            var id = parseInt(RegExp.$1, 10);
-            if(id <= read) {
-              element.addClass('read');
-              $('div[id^="reply-' + id + '"]').addClass('read');
-            }
-            else {
-              return false;
-            }
+          var id = parseInt(element.attr('data-tweet-id'), 10);
+          if(id <= read) {
+            element.addClass('read');
+            $('div[data-tweet-id="' + id + '"]').addClass('read');
+          }
+          else {
+            return false;
           }
           return true;
         });
       }
       currentTab = tabs.find(function(t) { return t.name == name; });
-      var viewId = '#view-' + currentTab.id;
-      $('#views > div:not(' + viewId + ')').hide();
-      $('#views > div:hidden' + viewId).show();
-      $('#tab-' + currentTab.id).addClass('active');
+      $('#views > div[data-tab-id="' + currentTab.id + '"]').show();
+      $('#tabs > li[data-tab-id="' + currentTab.id + '"]').addClass('active');
       $.scrollTo(currentTab.scrollTop);
       updateRead();
     }
@@ -165,7 +162,10 @@ $(function() {
     var view = $('#views > #view-' + tweet.tab_id);
 
     var element = $('<div />')
-      .attr({ id : 'tweet-' + tweet.data.id })
+      .attr({
+        id : 'tweet-' + tweet.data.id,
+        'data-tweet-id' : tweet.data.id
+      })
       .append(tweet.html);
     view.prepend(element);
 
@@ -191,7 +191,11 @@ $(function() {
       }
       element = $('<div />')
         .append(reply.html)
-        .attr({ id : 'reply-' + tweet.data.id + '-' + reply.data.id})
+        .attr({
+          id : 'reply-' + tweet.data.id + '-' + reply.data.id,
+          'data-tweet-id' : tweet.data.id,
+          'data-reply-id' : reply.data.id
+        })
         .addClass('reply');
       insertTarget.after(element);
       insertTarget = element;
@@ -202,8 +206,8 @@ $(function() {
     if(!visible) {
       view.show();
     }
-    var height = $('#tweet-' + data.id).outerHeight(true);
-    $('div[id^="reply-' + data.id + '"]').each(function() {
+    var height = $('#views > div[data-tweet-id="' + data.id + '"]').outerHeight(true);
+    $('div[data-tweet-id="' + data.id + '"]').each(function() {
       height += $(this).outerHeight(true);
     });
     if(!visible) {
@@ -262,9 +266,12 @@ $(function() {
               tab.scrollTop = 0;
               tab.selectedIndex = null;
               $('#views').append(
-                $('<div />').attr({ id : 'view-' + tab.id }));
+                $('<div />').attr({
+                  id : 'view-' + tab.id,
+                  'data-tab-id' : tab.id
+                }).hide());
               $('#tabs').append(
-                $('<li />').attr({ id : 'tab-' + tab.id }).append(
+                $('<li />').attr({ id : 'tab-' + tab.id, 'data-tab-id' : tab.id }).append(
                   $('<a />').attr({ href : '#tabs/' + tab.name }).append(
                     tab.name, ' ', $('<span />').addClass('unread').append(
                       '(', $('<span />').addClass('count').append('0'), ')'))));
@@ -323,11 +330,8 @@ $(function() {
   });
 
   var getTweetIdFromAnchor = function(anchor) {
-    var id = $(anchor).parent().parent().parent().attr('id');
-    if(id.match(/^tweet-(\d+)$/)) {
-      return parseInt(RegExp.$1, 10);
-    }
-    return null;
+    var id = $(anchor).parent().parent().parent().attr('data-tweet-id');
+    return parseInt(id, 10);
   };
 
   var getTweetFromAnchor = function(anchor) {
@@ -473,9 +477,9 @@ $(function() {
     if(selectedIndex === null) {
       return;
     }
-    var id = $(this).attr('id');
-    if(id.match(/^tweet-(\d+)$/) || id.match(/^reply-(\d+)-(?:\d+)$/)) {
-      var clickedId = parseInt(RegExp.$1, 10);
+    var id = $(this).attr('data-tweet-id');
+    if(id) {
+      var clickedId = parseInt(id, 10);
       var tweets = currentTab.tweets;
       console.log(clickedId);
       for(var i = 1, n = tweets.length; i < n; ++i) {
