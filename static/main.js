@@ -468,6 +468,52 @@ $(function() {
     }
   };
 
+  $('#views > div > div').live('click', function(e) {
+    var selectedIndex = currentTab.selectedIndex;
+    if(selectedIndex === null) {
+      return;
+    }
+    var id = $(this).attr('id');
+    if(id.match(/^tweet-(\d+)$/) || id.match(/^reply-(\d+)-(?:\d+)$/)) {
+      var clickedId = parseInt(RegExp.$1, 10);
+      var tweets = currentTab.tweets;
+      console.log(clickedId);
+      for(var i = 1, n = tweets.length; i < n; ++i) {
+        var f = selectedIndex + i;
+        var b = selectedIndex - i;
+        if(b < 0 && f >= n) {
+          break;
+        }
+        if(b >= 0 && tweets[b].data.id == clickedId) {
+          selectedIndex = b;
+          break;
+        }
+        if(f < n && tweets[f].data.id == clickedId) {
+          selectedIndex = f;
+          break;
+        }
+      }
+      console.log(selectedIndex);
+      currentTab.selectedIndex = selectedIndex;
+      updateSelected();
+    }
+  });
+
+  $(document).mousewheel(function(e, delta) {
+    if(delta > 0) {
+      for(var i = 0; i < delta; ++i) {
+        prevTweet();
+      }
+      e.preventDefault();
+    }
+    else if(delta < 0) {
+      for(var i = delta; i < 0; ++i) {
+        nextTweet();
+      }
+      e.preventDefault();
+    }
+  });
+
   $(document).keypress(function(e) {
     switch(e.keyCode) {
     case 'j'.charCodeAt(0):
