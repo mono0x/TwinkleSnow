@@ -51,7 +51,7 @@ class TweetRenderer
           "http://tweetphotoapi.com/api/TPAPI.svc/imagefromurl?size=thumbnail&url=#$1")
       when %r!http://(?:www\.nicovideo\.jp/watch/|nico\.ms/)sm(\d+)!
         create_image_preview(
-          "http://www.nicovideo.jp/watch/#$1",
+          "http://www.nicovideo.jp/watch/sm#$1",
           "http://tn-skr2.smilevideo.jp/smile?i=#$1",
           :width => 200, :height => 150)
       when %r!http://(?:www\.youtube\.com/watch\?.*v=|youtu\.be/)([A-Za-z0-9_-]+)!
