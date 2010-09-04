@@ -477,7 +477,6 @@ $(function() {
     }
     var tweet = currentTab.tweets[currentTab.selectedIndex];
     var element = $('#tweet-' + tweet.data.id);
-    console.log(element.find('a.external'));
     var externalLinks = element.find('a.external');
     if(openAll) {
       externalLinks.each(function() {
@@ -498,7 +497,6 @@ $(function() {
     if(id) {
       var clickedId = parseInt(id, 10);
       var tweets = currentTab.tweets;
-      console.log(clickedId);
       for(var i = 1, n = tweets.length; i < n; ++i) {
         var f = selectedIndex + i;
         var b = selectedIndex - i;
@@ -514,7 +512,6 @@ $(function() {
           break;
         }
       }
-      console.log(selectedIndex);
       currentTab.selectedIndex = selectedIndex;
       updateSelected();
     }
