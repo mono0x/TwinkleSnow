@@ -13,6 +13,7 @@ var openUri = function(uri) {
   var a = document.createElement("a");
   a.href = uri;
   a.target = "_blank";
+  a.rel = "noreferrer";
   var e = document.createEvent("MouseEvents");
   e.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 1, null);
   a.dispatchEvent(e);
