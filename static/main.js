@@ -115,9 +115,9 @@ $(function() {
       var name = RegExp.$1;
       if(currentTab != null) {
         addReadTweets();
+        updateRead();
         $('#tabs > li[data-tab-id="' + currentTab.id + '"]').removeClass('active');
         $('#views > div[data-tab-id="' + currentTab.id + '"]').hide();
-        updateRead();
         readTweets.forEach(function(tweet) {
           $('#views > div[data-tab-id="' + currentTab.id + '"] > div[data-tweet-id="' + tweet.data.id + '"]')
             .addClass('read').attr({ 'data-read' : '1' });
