@@ -49,6 +49,7 @@ $(function() {
         return {
           tweet : tweet,
           element : tweetElement,
+          index : i,
           count : n - i - 1
         };
       }
@@ -89,26 +90,39 @@ $(function() {
     }
   };
 
+  var readTweets = [];
+
+  var addReadTweets = function() {
+    var te = findTweetAndElementOnTop();
+    if(!te) {
+      return;
+    }
+    var index = te.index;
+    for(var i = index; i >= 0; --i) {
+      var tweet = currentTab.tweets[i];
+      if(!tweet.read) {
+        readTweets.push(tweet);
+        tweet.read = true;
+      }
+      else {
+        break;
+      }
+    }
+  };
+
   var updateHash = function() {
     if(window.location.hash.match(/^#tabs\/([a-z0-9\-]+)$/)) {
       var name = RegExp.$1;
       if(currentTab != null) {
+        addReadTweets();
         $('#tabs > li[data-tab-id="' + currentTab.id + '"]').removeClass('active');
         $('#views > div[data-tab-id="' + currentTab.id + '"]').hide();
         updateRead();
-        var read = currentTab.read;
-        $.each($('#views > div[data-tab-id="' + currentTab.id + '"] > div:not(.reply.read)').get().reverse(), function(i, e) {
-          var element = $(e);
-          var id = parseInt(element.attr('data-tweet-id'), 10);
-          if(id <= read) {
-            element.addClass('read');
-            $('div[data-tweet-id="' + id + '"]').addClass('read');
-          }
-          else {
-            return false;
-          }
-          return true;
+        readTweets.forEach(function(tweet) {
+          $('#views > div[data-tab-id="' + currentTab.id + '"] > div[data-tweet-id="' + tweet.data.id + '"]')
+            .addClass('read').attr({ 'data-read' : '1' });
         });
+        readTweets = [];
       }
       currentTab = tabs.find(function(t) { return t.name == name; });
       $('#views > div[data-tab-id="' + currentTab.id + '"]').show();
@@ -149,6 +163,7 @@ $(function() {
           ++currentTab.selectedIndex;
           skiped = false;
         }
+        addReadTweets();
       }
       if(!skiped) {
         updateSelected();
@@ -419,6 +434,7 @@ $(function() {
     if(te.offset().top - $(window).scrollTop() < 0) {
       $.scrollTo(te);
     }
+    addReadTweets();
     updateSelected();
   };
 
