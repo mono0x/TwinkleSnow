@@ -1,3 +1,4 @@
+# -*- config: utf-8 -*-
 @account = ''
 @password = ''
 @web_socket = {
