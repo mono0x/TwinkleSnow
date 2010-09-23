@@ -1,15 +1,20 @@
 
 require 'uri'
+require 'rack'
 require 'erubis'
 
 class TweetRenderer
 
-  REPLY_RE = /@([A-Za-z0-9_]+)/
-  HASHTAG_RE = /#([A-Za-z0-9_]+)/
-  URI_RE = /(#{URI.regexp([ 'http', 'https' ])})/
-  BREAK_RE = /(\n)/
-
-  TEXT_RE = /#{REPLY_RE}|#{HASHTAG_RE}|#{BREAK_RE}|#{URI_RE}/
+  TEXT_RE = Regexp.union([
+    %r{@([A-Za-z0-9_]+)},
+    %r{#([A-Za-z0-9_]+)},
+    %r{(s?https?://[-_.!~*'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)},
+    %r{(\n)},
+    %r{(\")},
+    %r{(\&)},
+    %r{(\<)},
+    %r{(\>)},
+  ])
 
   def initialize
     @eruby = Erubis::Eruby.new(open('view/content.rhtml').read)
@@ -22,7 +27,7 @@ class TweetRenderer
     id = status['id']
     user = status['user']
     screen_name = user['screen_name']
-    text = status['text']
+    text = unescape_html(status['text'])
     created_at = Time.parse(status['created_at'])
     in_reply_to_status_id = status['in_reply_to_status_id']
     in_reply_to_screen_name = status['in_reply_to_screen_name']
@@ -48,7 +53,7 @@ class TweetRenderer
       when %r!(http://tweetphoto\.com/\d+)!
         create_image_preview(
           "#$1",
-          "http://tweetphotoapi.com/api/TPAPI.svc/imagefromurl?size=thumbnail&url=#$1")
+          "http://tweetphotoapi.com/api/TPAPI.svc/imagefromurl?size=thumbnail&amp;url=#$1")
       when %r!http://(?:www\.nicovideo\.jp/watch/|nico\.ms/)sm(\d+)!
         create_image_preview(
           "http://www.nicovideo.jp/watch/sm#$1",
@@ -63,10 +68,14 @@ class TweetRenderer
 
     content = text.gsub(TEXT_RE) do
       case
-      when $1 then %!@<a target="_blank" href="http://twitter.com/#$1">#$1</a>!
-      when $2 then %!<a target="_blank" href="http://search.twitter.com/search?q=%23#$2">\##$2</a>!
-      when $3 then '<br />'
-      when $4 then %!<a target="_blank" class="external" href="#$4">#$4</a>!
+      when reply = $1 then %!@<a target="_blank" href="http://twitter.com/#{reply}">#{reply}</a>!
+      when hashtag = $2 then %!<a target="_blank" href="http://search.twitter.com/search?q=%23#{hashtag}">\##{hashtag}</a>!
+      when uri = $3 then %!<a target="_blank" class="external" href="#{Rack::Utils.escape_html uri}">#{Rack::Utils.escape_html uri}</a>!
+      when $4 then '<br />'
+      when $5 then '&quot;'
+      when $6 then '&amp;'
+      when $7 then '&lt;'
+      when $8 then '&gt;'
       end
     end
 
@@ -78,6 +87,20 @@ class TweetRenderer
   end
 
   private
+
+  UNESCAPE_HTML = {
+    '&amp;' => '&',
+    '&lt;' => '<',
+    '&gt;' => '>',
+    '&#39;' => "'",
+    '&quot;' => '"',
+  }
+
+  UNESCAPE_HTML_PATTERN = Regexp.union(UNESCAPE_HTML.keys)
+
+  def unescape_html(s)
+    s.to_s.gsub(UNESCAPE_HTML_PATTERN) {|c| UNESCAPE_HTML[c] }
+  end
 
   def create_image_preview(href, thumbnail, size = {})
     <<-"EOS"
