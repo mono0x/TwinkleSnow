@@ -64,6 +64,11 @@ class TweetRenderer
           "http://www.youtube.com/watch?v=#$1",
           "http://i.ytimg.com/vi/#$1/3.jpg",
           :width => 200, :height => 150)
+      when %r!co(\d+)!
+        create_image_preview(
+          "http://com.nicovideo.jp/community/co#$1",
+          "http://icon.nimg.jp/community/s/co#$1",
+          :width => 64, :height => 64)
     end
 
     content = text.gsub(TEXT_RE) do
