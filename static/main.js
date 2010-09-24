@@ -532,73 +532,61 @@ $(function() {
     }
   });
 
-  $(document).keypress(function(e) {
-    switch(e.keyCode) {
-    case 'j'.charCodeAt(0):
+  $('input').bind('keydown', function(e) {
+    e.stopPropagation();
+  });
+
+  $(document)
+    .bind('keydown', 'j', function(e) {
       nextTweet();
       e.preventDefault();
-      break;
-
-    case 'k'.charCodeAt(0):
+    })
+    .bind('keydown', 'k', function(e) {
       prevTweet();
       e.preventDefault();
-      break;
-
-    case 'a'.charCodeAt(0):
+    })
+    .bind('keydown', 'a', function(e) {
       prevTab();
       e.preventDefault();
-      break;
-
-    case 's'.charCodeAt(0):
+    })
+    .bind('keydown', 's', function(e) {
       nextTab();
       e.preventDefault();
-      break;
-
-    case 'A'.charCodeAt(0):
+    })
+    .bind('keydown', 'S-a', function(e) {
       prevTab(true);
       e.preventDefault();
-      break;
-
-    case 'S'.charCodeAt(0):
+    })
+    .bind('keydown', 'S-s', function(e) {
       nextTab(true);
       e.preventDefault();
-      break;
-
-    case 'r'.charCodeAt(0):
+    })
+    .bind('keydown', 't', function(e) {
       if(currentTab.selectedIndex !== null) {
         retweet(currentTab.tweets[currentTab.selectedIndex]);
       }
       e.preventDefault();
-      break;
-
-    case 'U'.charCodeAt(0):
+    })
+    .bind('keydown', 'S-u', function(e) {
       if(currentTab.selectedIndex !== null) {
         unfollow(currentTab.tweets[currentTab.selectedIndex].data.user);
       }
       e.preventDefault();
-      break;
-
-    case 'f'.charCodeAt(0):
+    })
+    .bind('keydown', 'f', function(e) {
       if(currentTab.selectedIndex !== null) {
         createFavorite(currentTab.tweets[currentTab.selectedIndex]);
       }
       e.preventDefault();
-      break;
-
-    case 'v'.charCodeAt(0):
+    })
+    .bind('keydown', 'v', function(e) {
       openExternalLink();
       e.preventDefault();
-      break;
-      
-    case 'V'.charCodeAt(0):
+    })
+    .bind('keydown', 'S-v', function(e) {
       openExternalLink(true);
       e.preventDefault();
-      break;
-
-    default:
-      break;
-    }
-  });
+    });
 
 });
 
