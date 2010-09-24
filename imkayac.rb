@@ -9,7 +9,7 @@ class ImKayac
 
   def initialize(user_name, secret_key)
     @user_name = user_name
-    @sercret_key = secret_key
+    @secret_key = secret_key
   end
 
   def send(message, handler)
@@ -17,7 +17,7 @@ class ImKayac
       :message => message,
       :handler => handler,
       :sig => calculate_signature(message),
-    })
+    }, :head => { 'Content-Type' => 'application/x-www-form-urlencoded' })
   end
 
   private
