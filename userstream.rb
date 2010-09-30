@@ -23,8 +23,10 @@ class UserStream
 
   def start
     stream = Twitter::JSONStream.connect(
-      :host => 'betastream.twitter.com',
-      :path => '/2b/user.json',
+      :host => 'userstream.twitter.com',
+      :path => '/2/user.json',
+      :ssl => true,
+      :user_agent => 'TwinkleSnow',
       :oauth => {
         :consumer_key => @oauth[:consumer_token],
         :consumer_secret => @oauth[:consumer_secret],

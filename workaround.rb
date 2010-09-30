@@ -25,5 +25,10 @@ class Twitter::JSONStream
     {}
   end
 
+  def oauth_header
+    uri = "http#{'s' if @options[:ssl]}://#{@options[:host]}:#{@options[:port]}#{@options[:path]}"
+    ::ROAuth.header(@options[:oauth], uri, params, @options[:method])
+  end
+
 end
 
