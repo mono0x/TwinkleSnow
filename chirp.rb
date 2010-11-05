@@ -30,8 +30,7 @@ twitter = TwitterAPI.new(config.oauth)
 
 tweet_renderer = TweetRenderer.new
 
-tweet_storage = TweetStorage.new(
-  config.tokyo_tyrant[:host], config.tokyo_tyrant[:port])
+tweet_storage = TweetStorage.new
 
 kayac = ImKayac.new(config.im_kayac[:user_name], config.im_kayac[:secret_key]) if config.im_kayac
 

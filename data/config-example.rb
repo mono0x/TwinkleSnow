@@ -5,10 +5,6 @@
   :host => '',
   :port => 1,
 }
-@tokyo_tyrant = {
-  :host => 'localhost',
-  :port => 1978,
-}
 @oauth = {
   :consumer_token => '',
   :consumer_secret => '',
