@@ -1,592 +1,176 @@
-(function($) {
+(function(jQuery) {
 
-Array.prototype.find = function(cond) {
-  for(var i = 0, n = this.length; i < n; ++i) {
-    if(cond(this[i])) {
-      return this[i];
+if(!("WebSocket" in window)) {
+  alert('WebSocket is not supported in this browser.');
+  return;
+}
+
+jQuery(function() {
+
+var Actions = {};
+Actions.upCursor = function() {
+  suspendScrollEvent(function() {
+    View.currentTab.upCursor();
+  });
+};
+Actions.downCursor = function() {
+  suspendScrollEvent(function() {
+    View.currentTab.downCursor();
+  });
+};
+Actions.upTab = function() {
+  suspendScrollEvent(function() {
+    var tabCount = View.tabs.length;
+    if(tabCount > 0) {
+      var i = (View.currentTab.id + tabCount - 1) % tabCount;
+      location.hash = '#tabs/' + View.tabs[i].name;
     }
-  }
-  return null;
+  });
 };
-
-var openUri = function(uri) {
-  var a = document.createElement("a");
-  a.href = uri;
-  a.target = "_blank";
-  a.rel = "noreferrer";
-  var e = document.createEvent("MouseEvents");
-  e.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 1, null);
-  a.dispatchEvent(e);
+Actions.downTab = function() {
+  suspendScrollEvent(function() {
+    var tabCount = View.tabs.length;
+    if(tabCount > 0) {
+      var i = (View.currentTab.id + 1) % tabCount;
+      location.hash = '#tabs/' + View.tabs[i].name;
+    }
+  });
 };
-
-$(function() {
-  if(!("WebSocket" in window)) {
-    alert('WebSocket is not supported in this browser.');
+Actions.retweet = function() {
+  var tab = View.currentTab;
+  if(tab.cursor === null) {
     return;
   }
-
-  var tabs = null;
-
-  $('#main').hide();
-  var currentTab = null;
-
-  var updateUnreadCount = function(tab, count) {
-    tab.unreadCount = count;
-    var tabElement = $('#tab-' + tab.id);
-    tabElement.find('.unread > .count').text(count);
-    tabElement.toggleClass('has-unread', count > 0);
-  };
-  
-  var findTweetAndElementOnTop = function() {
-    var scrollTop = $(window).scrollTop();
-    var tweets = currentTab.tweets;
-    var n = tweets.length;
-    for(var i = n - 1; i >= 0; --i) {
-      var tweet = tweets[i];
-      var id = tweet.data.id;
-      var tweetElement = $('#tweet-' + id);
-      if(tweetElement.offset().top - scrollTop >= 0) {
-        return {
-          tweet : tweet,
-          element : tweetElement,
-          index : i,
-          count : n - i - 1
-        };
-      }
-    }
-    return null;
-  };
-
-  var updateSelected = function(tab) {
-    if(!tab) {
-      tab = currentTab;
-    }
-    var view = $('#views > #view-' + tab.id);
-    view.find('.selected').removeClass('selected');
-    if(tab.selectedIndex !== null) {
-      var tweet = tab.tweets[tab.selectedIndex];
-      view.find('#tweet-' + tweet.data.id).addClass('selected');
-    }
-  };
-
-  var updateRead = function() {
-    var te = findTweetAndElementOnTop();
-    if(!te) {
-      return;
-    }
-    var tweet = te.tweet;
-    var id = tweet.data.id;
-    var count = te.count;
-    if(id > currentTab.read) {
-      currentTab.read = id;
-      updateUnreadCount(currentTab, count);
-      if(ws) {
-        ws.send(JSON.stringify({
-          action : 'read',
-          tab_id : currentTab.id,
-          tweet_id : currentTab.read
-        }));
-      }
-    }
-  };
-
-  var readTweets = [];
-
-  var addReadTweets = function() {
-    var te = findTweetAndElementOnTop();
-    if(!te) {
-      return;
-    }
-    var index = te.index;
-    for(var i = index; i >= 0; --i) {
-      var tweet = currentTab.tweets[i];
-      if(!tweet.read) {
-        readTweets.push(tweet);
-        tweet.read = true;
-      }
-      else {
-        break;
-      }
-    }
-  };
-
-  var updateHash = function() {
-    if(window.location.hash.match(/^#tabs\/([a-z0-9\-]+)$/)) {
-      var name = RegExp.$1;
-      if(currentTab != null) {
-        addReadTweets();
-        updateRead();
-        $('#tabs > li[data-tab-id="' + currentTab.id + '"]').removeClass('active');
-        $('#views > div[data-tab-id="' + currentTab.id + '"]').hide();
-        readTweets.forEach(function(tweet) {
-          $('#views > div[data-tab-id="' + currentTab.id + '"] > div[data-tweet-id="' + tweet.data.id + '"]')
-            .addClass('read').attr({ 'data-read' : '1' });
-        });
-        readTweets = [];
-      }
-      currentTab = tabs.find(function(t) { return t.name == name; });
-      $('#views > div[data-tab-id="' + currentTab.id + '"]').show();
-      $('#tabs > li[data-tab-id="' + currentTab.id + '"]').addClass('active');
-      $.scrollTo(currentTab.scrollTop);
-      updateRead();
-    }
-  };
-
-  $(window).bind('hashchange', function() {
-    updateHash();
+  var tweet = tab.tweets[tab.cursor];
+  receiver.send({
+    action: 'retweet',
+    id: tweet.data.id
   });
-
-  $(window).scroll(function() {
-    currentTab.scrollTop = $(window).scrollTop();
-    if(currentTab.selectedIndex !== null) {
-      var skiped = true;
-      var scrollTop = $(window).scrollTop();
-      var tweet;
-      var te;
-      while(currentTab.selectedIndex > 0) {
-        tweet = currentTab.tweets[currentTab.selectedIndex];
-        te = $('#tweet-' + tweet.data.id);
-        if(te.offset().top - scrollTop >= 0) {
-          break;
-        }
-        --currentTab.selectedIndex;
-        skiped = false;
-      }
-      if(skiped) {
-        var windowHeight = $(window).height();
-        while(currentTab.selectedIndex < currentTab.tweets.length - 1) {
-          tweet = currentTab.tweets[currentTab.selectedIndex];
-          te = $('#tweet-' + tweet.data.id);
-          if(te.offset().top + te.outerHeight(true) - scrollTop <= windowHeight) {
-            break;
-          }
-          ++currentTab.selectedIndex;
-          skiped = false;
-        }
-        addReadTweets();
-      }
-      if(!skiped) {
-        updateSelected();
-      }
-    }
-    updateRead();
+};
+Actions.createFavorite = function() {
+  var tab = View.currentTab;
+  if(tab.cursor === null) {
+    return;
+  }
+  var tweet = tab.tweets[tab.cursor];
+  receiver.send({
+    action: 'favorite',
+    id: tweet.data.id
   });
+};
 
-  var prependTweet = function(tweet) {
-    var data = tweet.data;
-
-    var view = $('#views > #view-' + tweet.tab_id);
-
-    var element = $('<div />')
-      .attr({
-        id : 'tweet-' + tweet.data.id,
-        'data-tweet-id' : tweet.data.id
-      })
-      .append(tweet.html);
-    view.prepend(element);
-
-    if(!tabs[tweet.tab_id].selectedIndex) {
-      tabs[tweet.tab_id].selectedIndex = 0;
-      updateSelected(tabs[tweet.tab_id]);
-    }
-
-    var insertTarget = element;
-    var inReplyToStatusId = data.in_reply_to_status_id;
-    while(inReplyToStatusId) {
-      var reply = null;
-      for(var i = 0, n = tabs.length; i < n; ++i) {
-        reply = tabs[i].tweets.find(function(t) {
-          return inReplyToStatusId == t.data.id;
-        });
-        if(reply) {
-          break;
-        }
-      }
-      if(!reply) {
-        break;
-      }
-      element = $('<div />')
-        .append(reply.html)
-        .attr({
-          id : 'reply-' + tweet.data.id + '-' + reply.data.id,
-          'data-tweet-id' : tweet.data.id,
-          'data-reply-id' : reply.data.id
-        })
-        .addClass('reply');
-      insertTarget.after(element);
-      insertTarget = element;
-      inReplyToStatusId = reply.data.in_reply_to_status_id;
-    }
-
-    var visible = view.is(':visible');
-    if(!visible) {
-      view.show();
-    }
-    var height = $('#views > div[data-tweet-id="' + data.id + '"]').outerHeight(true);
-    $('div[data-tweet-id="' + data.id + '"]').each(function() {
-      height += $(this).outerHeight(true);
-    });
-    if(!visible) {
-      view.hide();
-    }
-    var tab = tabs[tweet.tab_id];
-    tab.scrollTop += height;
-    if(currentTab.id == tab.id) {
-      $.scrollTo(currentTab.scrollTop, 0);
-    }
-  };
-
-  var connectionState = 0;
-  var ws = null;
-  var connectWebSocket = function(passwordHash) {
-    var setMessage = function(text) {
-      $('#auth > p').text(text);
-    };
-
-    setMessage('connecting...');
-
-    ws = new WebSocket('ws://' + webSocket.host + ':' + webSocket.port);
-    ws.onmessage = function(e) {
-      var json = JSON.parse(e.data);
-      switch(connectionState) {
-        case 0:
-          {
-            var serverRandom = json.server_random;
-            var clientRandom = CybozuLabs.SHA1.calc(Math.random().toString());
-            var hash = CybozuLabs.SHA1.calc(passwordHash + serverRandom + clientRandom);
-            ws.send(JSON.stringify({
-              hash : hash,
-              client_random : clientRandom
-            }));
-            ++connectionState;
-          }
-          break;
-        case 1:
-          {
-            if(json.result == 'success') {
-              ++connectionState;
-            }
-            else {
-              setMessage('failure');
-              ws.close();
-            }
-          }
-          break;
-        case 2:
-          {
-            tabs = json.tabs;
-            tabs.forEach(function(tab) {
-              tab.tweets = [];
-              tab.read = 0;
-              tab.unreadCount = 0;
-              tab.scrollTop = 0;
-              tab.selectedIndex = null;
-              $('#views').append(
-                $('<div />').attr({
-                  id : 'view-' + tab.id,
-                  'data-tab-id' : tab.id
-                }).hide());
-              $('#tabs').append(
-                $('<li />').attr({ id : 'tab-' + tab.id, 'data-tab-id' : tab.id }).append(
-                  $('<a />').attr({ href : '#tabs/' + tab.name }).append(
-                    tab.name, ' ', $('<span />').addClass('unread').append(
-                      '(', $('<span />').addClass('count').append('0'), ')'))));
-            });
-            if(!window.location.hash) {
-              window.location.hash = '#tabs/timeline';
-            }
-            updateHash();
-            ++connectionState;
-            $('#auth input[type="password"]').blur();
-            $('#auth').fadeOut(300);
-            $('#main').fadeIn(300);
-          }
-          break;
-        case 3:
-          {
-            json.tweets.forEach(function(tweet) {
-              var tab = tabs[tweet.tab_id];
-              tab.tweets.push(tweet);
-              updateUnreadCount(tab, tab.unreadCount + 1);
-              prependTweet(tweet);
-            });
-            updateRead();
-          }
-          break;
-        default:
-          break;
-      }
-    };
-    ws.onclose = function() {
-      ws = null;
-      switch(connectionState) {
-        case 0:
-          break;
-        case 1:
-          break;
-        case 2:
-        case 3:
-          {
-            connectionState = 0;
-            connectWebSocket(passwordHash);
-          }
-          break;
-        default:
-          break;
-      }
-    };
-    ws.onopen = function() {
-    };
-  };
-
-  $('#auth form').submit(function() {
-    var passwordHash = CybozuLabs.SHA1.calc($('#auth input[type="password"]').val());
-    connectWebSocket(passwordHash);
-    return false;
-  });
-
-  var getTweetIdFromAnchor = function(anchor) {
-    var id = $(anchor).parent().parent().parent().attr('data-tweet-id');
-    return parseInt(id, 10);
-  };
-
-  var getTweetFromAnchor = function(anchor) {
-    var id = getTweetIdFromAnchor(anchor);
-    if(!id) {
-      return null;
-    }
-    var tweets = currentTab.tweets;
-    for(var i = 0, n = tweets.length; i < n; ++i) {
-      if(tweets[i].data.id == id) {
-        return tweets[i];
-      }
-    }
-    return null;
-  };
-
-  var retweet = function(tweet) {
-    ws.send(JSON.stringify({
-      action : 'retweet',
-      id : tweet.data.id
-    }));
-  };
-
-  var unfollow = function(user) {
-    ws.send(JSON.stringify({
-      action : 'unfollow',
-      user_id : user.id
-    }));
-  };
-
-  var createFavorite = function(tweet) {
-    ws.send(JSON.stringify({
-      action : 'favorite',
-      id : tweet.data.id
-    }));
-  };
-
-  $('a[href="#retweet"]').live('click', function() {
-    var tweet = getTweetFromAnchor(this);
-    retweet(tweet);
-    return false;
-  });
-  $('a[href="#unfollow"]').live('click', function() {
-    var tweet = getTweetFromAnchor(this);
-    retweet(tweet.data.user);
-    return false;
-  });
-  $('a[href="#fav"]').live('click', function() {
-    var tweet = getTweetFromAnchor(this);
-    createFavorite(tweet);
-    return false;
-  });
-
-  $('input').keypress(function(e) {
-    e.stopPropagation();
-  });
-
-  var nextTweet = function() {
-    if(currentTab.selectedIndex === null) {
-      return;
-    }
-    if(currentTab.selectedIndex == 0) {
-      return;
-    }
-    --currentTab.selectedIndex;
-    var tweet = currentTab.tweets[currentTab.selectedIndex];
-    var te = $('#tweet-' + tweet.data.id);
-    if(te.offset().top + te.outerHeight(true) - $(window).scrollTop() >= $(window).height()) {
-      $.scrollTo(te.offset().top + te.outerHeight(true) - $(window).height());
-    }
-    updateSelected();
-  };
-
-  var prevTweet = function() {
-    if(currentTab.selectedIndex === null) {
-      return;
-    }
-    if(currentTab.selectedIndex == currentTab.tweets.length - 1) {
-      return;
-    }
-    ++currentTab.selectedIndex;
-    var tweet = currentTab.tweets[currentTab.selectedIndex];
-    var te = $('#tweet-' + tweet.data.id);
-    if(te.offset().top - $(window).scrollTop() < 0) {
-      $.scrollTo(te);
-    }
-    addReadTweets();
-    updateSelected();
-  };
-
-  var prevTab = function(unread) {
-    if(currentTab != null) {
-      var n = tabs.length;
-      var id = currentTab.id;
-      for(var i = 0; i < n - 1; ++i) {
-        id = (id + n - 1) % n;
-        var tab = tabs[id];
-        if(tab.unreadCount > 0 || !unread) {
-          window.location.hash = '#tabs/' + tab.name;
-          return;
-        }
-      }
-    }
-  };
-
-  var nextTab = function(unread) {
-    if(currentTab != null) {
-      var n = tabs.length;
-      var id = currentTab.id;
-      for(var i = 0; i < n - 1; ++i) {
-        id = (id + 1) % n;
-        var tab = tabs[id];
-        if(tab.unreadCount > 0 || !unread) {
-          window.location.hash = '#tabs/' + tab.name;
-          return;
-        }
-      }
-    }
-  };
-
-  var openExternalLink = function(openAll) {
-    if(currentTab === null) {
-      return;
-    }
-    if(currentTab.selectedIndex === null) {
-      return;
-    }
-    var tweet = currentTab.tweets[currentTab.selectedIndex];
-    var element = $('#tweet-' + tweet.data.id);
-    var externalLinks = element.find('a.external');
-    if(openAll) {
-      externalLinks.each(function() {
-        openUri($(this).attr('href'));
+var receiver = new TweetReceiver(webSocket);
+receiver.onconnect = function(tabs) {
+  tabs.forEach(function(param) {
+    var tab = new Tab(param)
+    tab.onread = function(id) {
+      receiver.send({
+        action : 'read',
+        tab_id : tab.id,
+        tweet_id : id
       });
     }
-    else if(externalLinks.size() > 0) {
-      openUri(externalLinks.eq(0).attr('href'));
-    }
-  };
+    View.appendTab(tab);
+  });
+  jQuery('#auth input[type="password"]').blur();
+  jQuery('#auth').fadeOut(300);
+  jQuery('#main').fadeIn(300);
+};
+receiver.onreceive = function(tweets) {
+  tweets.forEach(function(tweet) {
+    View.receiveTweet(tweet);
+  });
+  var tab = View.currentTab;
+  if(tab.cursor === null && tab.tweets.length > 0) {
+    tab.setCursor(0);
+  }
+};
 
-  $('#views > div > div').live('click', function(e) {
-    var selectedIndex = currentTab.selectedIndex;
-    if(selectedIndex === null) {
-      return;
-    }
-    var id = $(this).attr('data-tweet-id');
-    if(id) {
-      var clickedId = parseInt(id, 10);
-      var tweets = currentTab.tweets;
-      for(var i = 1, n = tweets.length; i < n; ++i) {
-        var f = selectedIndex + i;
-        var b = selectedIndex - i;
-        if(b < 0 && f >= n) {
-          break;
-        }
-        if(b >= 0 && tweets[b].data.id == clickedId) {
-          selectedIndex = b;
-          break;
-        }
-        if(f < n && tweets[f].data.id == clickedId) {
-          selectedIndex = f;
-          break;
-        }
-      }
-      currentTab.selectedIndex = selectedIndex;
-      updateSelected();
-    }
+jQuery(window).bind('hashchange', function() {
+  if(location.hash.match(/^#tabs\/([a-z0-9\-]+)$/)) {
+    var nextTab = View.findTabByName(RegExp.$1);
+    View.switchTab(nextTab);
+  }
+  else {
+    location.hash = '#tabs/timeline';
+    View.switchTab(View.findTabByName('timeline'));
+  }
+});
+jQuery(window).trigger('hashchange');
+
+jQuery('#auth form').submit(function() {
+  var password = jQuery('#auth input[type="password"]').val();
+  receiver.connect(password);
+  return false;
+});
+
+jQuery('#views > div > div').live('click', function(e) {
+  var id = parseInt(jQuery(this).attr('data-tweet-id'), 10);
+  View.currentTab.setCursorById(id);
+});
+
+jQuery('input').bind('keydown', function(e) {
+  e.stopPropagation();
+});
+
+var scrollHandler = function() {
+  View.currentTab.adjustCursor();
+};
+jQuery(window).bind('scroll', scrollHandler);
+
+var suspendScrollEvent = function(f) {
+  jQuery(window).unbind('scroll', scrollHandler);
+  f();
+  jQuery(window).bind('scroll', scrollHandler);
+};
+
+jQuery(window)
+  .bind('keydown', 'j', function(e) {
+    Actions.downCursor();
+  })
+  .bind('keydown', 'k', function(e) {
+    Actions.upCursor();
+  })
+  .bind('keydown', 'a', function(e) {
+    Actions.upTab();
+  })
+  .bind('keydown', 's', function(e) {
+    Actions.downTab();
+  })
+  .bind('keydown', 't', function(e) {
+    Actions.retweet();
+  })
+  .bind('keydown', 'f', function(e) {
+    Actions.createFavorite();
   });
 
-  $(document).mousewheel(function(e, delta) {
-    if(delta > 0) {
-      for(var i = 0; i < delta; ++i) {
-        prevTweet();
-      }
-      e.preventDefault();
-    }
-    else if(delta < 0) {
-      for(var i = delta; i < 0; ++i) {
-        nextTweet();
-      }
-      e.preventDefault();
-    }
-  });
+jQuery(window).mousewheel(function(e, delta) {
+  var max = jQuery(document).height() - jQuery(window).height();
+  if(delta > 0 && View.currentTab.scrollTop == 0) {
+    View.currentTab.upCursor();
+    return false;
+  }
+  else if(delta < 0 && View.currentTab.scrollTop == max) {
+    View.currentTab.downCursor();
+    return false;
+  }
+  return true;
+});
 
-  $('input').bind('keydown', function(e) {
-    e.stopPropagation();
-  });
+jQuery('a[href="#retweet"]').live('click', function() {
+  var id = parseInt(jQuery(this).parent().parent().parent().attr('data-tweet-id'), 10);
+  View.currentTab.setCursorById(id);
+  Actions.retweet();
+  return false;
+});
+jQuery('a[href="#fav"]').live('click', function() {
+  var id = parseInt(jQuery(this).parent().parent().parent().attr('data-tweet-id'), 10);
+  View.currentTab.setCursorById(id);
+  Actions.createFavorite();
+  return false;
+});
 
-  $(document)
-    .bind('keydown', 'j', function(e) {
-      nextTweet();
-      e.preventDefault();
-    })
-    .bind('keydown', 'k', function(e) {
-      prevTweet();
-      e.preventDefault();
-    })
-    .bind('keydown', 'a', function(e) {
-      prevTab();
-      e.preventDefault();
-    })
-    .bind('keydown', 's', function(e) {
-      nextTab();
-      e.preventDefault();
-    })
-    .bind('keydown', 'S-a', function(e) {
-      prevTab(true);
-      e.preventDefault();
-    })
-    .bind('keydown', 'S-s', function(e) {
-      nextTab(true);
-      e.preventDefault();
-    })
-    .bind('keydown', 't', function(e) {
-      if(currentTab.selectedIndex !== null) {
-        retweet(currentTab.tweets[currentTab.selectedIndex]);
-      }
-      e.preventDefault();
-    })
-    .bind('keydown', 'S-u', function(e) {
-      if(currentTab.selectedIndex !== null) {
-        unfollow(currentTab.tweets[currentTab.selectedIndex].data.user);
-      }
-      e.preventDefault();
-    })
-    .bind('keydown', 'f', function(e) {
-      if(currentTab.selectedIndex !== null) {
-        createFavorite(currentTab.tweets[currentTab.selectedIndex]);
-      }
-      e.preventDefault();
-    })
-    .bind('keydown', 'v', function(e) {
-      openExternalLink();
-      e.preventDefault();
-    })
-    .bind('keydown', 'S-v', function(e) {
-      openExternalLink(true);
-      e.preventDefault();
-    });
+jQuery('#main').hide();
 
 });
 

@@ -10,6 +10,7 @@
 
       body {
         margin: 0;
+        font-size: 15px;
         font-family: sans-serif;
         background-color: #<%= user['profile_background_color'] %>;
         <% if user['profile_use_background_image'] %>
@@ -127,10 +128,6 @@
         color: gray;
       }
 
-      #views .read {
-        opacity: 0.5;
-      }
-
       #navigation-container {
         position: fixed;
         width: 200px;
@@ -206,6 +203,10 @@
     <script type="text/javascript">
       var webSocket = <%= web_socket %>;
     </script>
+    <script type="text/javascript" src="/utility.js"></script>
+    <script type="text/javascript" src="/tweetreceiver.js"></script>
+    <script type="text/javascript" src="/tab.js"></script>
+    <script type="text/javascript" src="/view.js"></script>
     <script type="text/javascript" src="/main.js"></script>
   </head>
   <body>

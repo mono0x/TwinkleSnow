@@ -48,8 +48,6 @@ EventMachine.run do
       tweet_storage.delete json['tab_id'], json['tweet_id']
     when 'retweet'
       twitter.retweet json['id']
-    when 'unfollow'
-      twitter.unfollow json['user_id']
     when 'favorite'
       twitter.create_favorite json['id']
     end
