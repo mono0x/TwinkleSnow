@@ -170,6 +170,11 @@ jQuery('a[href="#fav"]').live('click', function() {
   return false;
 });
 
+jQuery('a.external').live('click', function() {
+  Utility.openUri($(this).attr('href'));
+  return false;
+});
+
 jQuery('#main').hide();
 
 });
