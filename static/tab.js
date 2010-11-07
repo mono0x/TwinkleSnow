@@ -139,7 +139,7 @@ Tab.prototype.adjustCursor = function() {
 
   var height = jQuery(window).height();
 
-  var skiped = true;
+  var skipped = true;
 
   var i = this.cursor;
   while(i > 0) {
@@ -149,10 +149,10 @@ Tab.prototype.adjustCursor = function() {
     if(top - scrollTop >= 0) {
       break;
     }
-    skiped = false;
+    skipped = false;
     --i;
   }
-  if(skiped) {
+  if(skipped) {
     i = this.cursor;
     while(i < tweets.length - 1) {
       var tweet = tweets[i];
@@ -161,12 +161,12 @@ Tab.prototype.adjustCursor = function() {
       if(top + element.outerHeight(true) - scrollTop <= height) {
         break;
       }
-      skiped = false;
+      skipped = false;
       ++i;
     }
     this.updateCounter();
   }
-  if(!skiped) {
+  if(!skipped) {
     this.setCursor(i);
     this.updateCursor();
   }
