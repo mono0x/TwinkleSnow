@@ -84,6 +84,10 @@
         margin-left: 56px;
       }
 
+      #views .header {
+        padding: 0 12px;
+      }
+
       #views .text {
         margin: 0;
         line-height: 140%;
@@ -91,18 +95,28 @@
         word-break: break-all;
       }
 
+      #views .image-preview {
+        padding: 4px 12px;
+      }
+
       #views .retweet {
         color: gray;
-        font-size: 80%;
-        padding: 0 12px;
+        font-size: 13px;
       }
 
       #views .information {
-        text-align: right;
         vertical-align: bottom;
         color: gray;
-        font-size: 80%;
+        font-size: 13px;
         padding: 0 12px;
+      }
+
+      #views > div > div .information .actions {
+        display: none;
+      }
+      #views > div > div.selected .information .actions,
+      #views > div > div:hover .information .actions {
+        display: inline-block;
       }
 
       #views .icon {
