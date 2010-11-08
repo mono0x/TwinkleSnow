@@ -113,15 +113,21 @@ jQuery('input').bind('keydown', function(e) {
   e.stopPropagation();
 });
 
-var scrollHandler = function() {
-  View.currentTab.adjustCursor();
+var scrollTimer = undefined;
+var setScrollTimer = function() {
+  scrollTimer = setInterval(function() {
+    View.currentTab.adjustCursor();
+  }, 1000);
 };
-jQuery(window).bind('scroll', scrollHandler);
+var clearScrollTimer = function() {
+  clearInterval(scrollTimer);
+};
+setScrollTimer();
 
 var suspendScrollEvent = function(f) {
-  jQuery(window).unbind('scroll', scrollHandler);
+  clearScrollTimer();
   f();
-  jQuery(window).bind('scroll', scrollHandler);
+  setScrollTimer();
 };
 
 jQuery(window)
@@ -146,11 +152,11 @@ jQuery(window)
 
 jQuery(window).mousewheel(function(e, delta) {
   var max = jQuery(document).height() - jQuery(window).height();
-  if(delta > 0 && View.currentTab.scrollTop == 0) {
+  if(delta > 0) {
     View.currentTab.upCursor();
     return false;
   }
-  else if(delta < 0 && View.currentTab.scrollTop == max) {
+  else if(delta < 0) {
     View.currentTab.downCursor();
     return false;
   }
