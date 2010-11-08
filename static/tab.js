@@ -101,16 +101,10 @@ Tab.prototype.setCursor = function(pos) {
   else if(pos >= tweets.length) {
     pos = tweets.length - 1;
   }
-  if(this.cursor === null) {
-    this.read = tweets[pos].data.id;
-    --this.unreadCount;
-  }
-  else {
-    for(var i = this.cursor; i <= pos; ++i) {
-      if(tweets[i].data.id > this.read) {
-        this.read = tweets[i].data.id;
-        --this.unreadCount;
-      }
+  for(var i = this.cursor || 0; i <= pos; ++i) {
+    if(tweets[i].data.id > this.read) {
+      this.read = tweets[i].data.id;
+      --this.unreadCount;
     }
   }
   this.cursor = pos;
