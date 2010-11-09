@@ -36,26 +36,32 @@ Actions.downTab = function() {
     }
   });
 };
-Actions.retweet = function() {
-  var tab = View.currentTab;
-  if(tab.cursor === null) {
-    return;
+Actions.retweet = function(id) {
+  if(id === undefined) {
+    var tab = View.currentTab;
+    if(tab.cursor === null) {
+      return;
+    }
+    var tweet = tab.tweets[tab.cursor];
+    id = tweet.data.id;
   }
-  var tweet = tab.tweets[tab.cursor];
   receiver.send({
     action: 'retweet',
-    id: tweet.data.id
+    id: id
   });
 };
-Actions.createFavorite = function() {
-  var tab = View.currentTab;
-  if(tab.cursor === null) {
-    return;
+Actions.createFavorite = function(id) {
+  if(id === undefined) {
+    var tab = View.currentTab;
+    if(tab.cursor === null) {
+      return;
+    }
+    var tweet = tab.tweets[tab.cursor];
+    id = tweet.data.id;
   }
-  var tweet = tab.tweets[tab.cursor];
   receiver.send({
     action: 'favorite',
-    id: tweet.data.id
+    id: id
   });
 };
 
@@ -164,15 +170,13 @@ jQuery(window).mousewheel(function(e, delta) {
 });
 
 jQuery('a[href="#retweet"]').live('click', function() {
-  var id = parseInt(jQuery(this).parent().parent().parent().attr('data-tweet-id'), 10);
-  View.currentTab.setCursorById(id);
-  Actions.retweet();
+  var id = jQuery(this).parent().parent().parent().parent().data('tweet-id');
+  Actions.retweet(id);
   return false;
 });
 jQuery('a[href="#fav"]').live('click', function() {
-  var id = parseInt(jQuery(this).parent().parent().parent().attr('data-tweet-id'), 10);
-  View.currentTab.setCursorById(id);
-  Actions.createFavorite();
+  var id = jQuery(this).parent().parent().parent().parent().data('tweet-id');
+  Actions.createFavorite(id);
   return false;
 });
 
