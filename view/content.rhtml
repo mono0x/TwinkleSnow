@@ -19,7 +19,7 @@
       |
       <a target="_blank" href="http://twitter.com/?status=@<%= screen_name %>&in_reply_to_status_id=<%= id %>&in_reply_to=<%= screen_name %>">Reply</a>
       <a href="#retweet">Retweet</a>
-      <a target="_blank" href="http://twitter.com/?status= RT @<%= screen_name %>: <%= text %>">RT</a>
+      <a target="_blank" href="http://twitter.com/?status= RT @<%= screen_name %>: <%=Rack::Utils.escape_html text %>">RT</a>
       <a href="#fav">Fav</a>
     </span>
   </div>
