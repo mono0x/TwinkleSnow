@@ -69,6 +69,11 @@ class TweetRenderer
           "http://com.nicovideo.jp/community/co#$1",
           "http://icon.nimg.jp/community/s/co#$1",
           :width => 64, :height => 64)
+      when %r!http://instagr.am/p/([A-Za-z0-9-]+)/!
+        create_image_preview(
+          "http://instagr.am/p/#$1",
+          "http://api.linknode.net/instagram/#$1/",
+          :width => 200)
     end
 
     content = text.gsub(TEXT_RE) do
