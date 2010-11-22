@@ -74,6 +74,11 @@ class TweetRenderer
           "http://instagr.am/p/#$1",
           "http://api.linknode.net/instagram/#$1/",
           :width => 200)
+      when %r!http://p.twipple.jp/(\w)(\w)(\w)(\w)(\w)!
+        create_image_preview(
+          "http://p.twipple.jp/#$1#$2#$3#$4#$5",
+          "http://p.twipple.jp/data/#$1/#$2/#$3/#$4/#$5_m.jpg",
+          :width => 200)
     end
 
     content = text.gsub(TEXT_RE) do
