@@ -43,7 +43,7 @@ Actions.retweet = function(id) {
       return;
     }
     var tweet = tab.tweets[tab.cursor];
-    id = tweet.data.id;
+    id = tweet.data.id_str;
   }
   receiver.send({
     action: 'retweet',
@@ -57,7 +57,7 @@ Actions.createFavorite = function(id) {
       return;
     }
     var tweet = tab.tweets[tab.cursor];
-    id = tweet.data.id;
+    id = tweet.data.id_str;
   }
   receiver.send({
     action: 'favorite',

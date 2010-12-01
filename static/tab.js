@@ -7,7 +7,7 @@ function Tab(param) {
   this.tweets = [];
   this.oldTweets = [];
   this.cursor = null;
-  this.read = 0;
+  this.readIndex = -1;
   this.scrollTop = 0;
   this.unreadCount = 0;
   this.onread = null;
@@ -101,10 +101,11 @@ Tab.prototype.setCursor = function(pos) {
   else if(pos >= tweets.length) {
     pos = tweets.length - 1;
   }
-  for(var i = this.cursor || 0; i <= pos; ++i) {
-    if(tweets[i].data.id > this.read) {
-      this.read = tweets[i].data.id;
-      --this.unreadCount;
+  if(pos > this.readIndex) {
+    this.unreadCount -= pos - this.readIndex;
+    this.readIndex = pos;
+    if(typeof this.onread == 'function') {
+      this.onread(this.tweets[this.readIndex].data.id_str);
     }
   }
   this.cursor = pos;
@@ -189,17 +190,17 @@ Tab.prototype.updateCounter = function() {
     .toggleClass('has-unread', this.unreadCount > 0)
     .find('.unread > .count')
       .text(this.unreadCount);
-  if(typeof this.onread == 'function') {
-    this.onread(this.read);
-  }
 };
 
 Tab.prototype.removeOldTweets = function() {
   var tweets = this.tweets;
-  while(tweets.length - this.unreadCount > 200) {
-    --this.cursor;
+  while(tweets.length - this.unreadCount > 100) {
+    --this.readIndex;
+    if(--this.cursor < 0) {
+      this.cursor = 0;
+    }
     var tweet = tweets.shift();
-    jQuery('div[data-tweet-id="' + tweet.data.id + '"]').remove();
+    jQuery('div[data-tweet-id="' + tweet.data.id_str + '"]').remove();
   }
 };
 
