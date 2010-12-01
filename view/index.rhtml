@@ -59,20 +59,45 @@
         background-color: white;
       }
 
-      #views > div > div {
+      #views > div > div[id^="tweet"],
+      #views > div > div[id^="reply"] {
         position: relative;
         width: 584px;
         min-height: 56px;
         padding: 8px 0;
       }
 
-      #views > div > div.reply {
-        width: 552px;
-        margin-left: 32px;
+      #views > div > div.expand-reply {
+        width: 584px;
+        text-align: center;
       }
 
-      #views > div > div:not(:last-child) {
-        border-bottom: 1px solid #eee;
+      #views > div > div.expand-reply > a {
+        display: block;
+        text-decoration: none;
+        background-color: white;
+        border: 1px solid #eee;
+      }
+      #views > div > div.expand-reply > a:hover {
+        background-color: #eee;
+        border: 1px solid silver;
+      }
+
+      #views > div > div.reply {
+        width: 552px;
+        padding-left: 32px;
+        display: none;
+      }
+
+      #views > div > div[id^="tweet"] + div.reply {
+        display: block;
+      }
+
+      #views > div > div[id^="tweet"] + div[id^="tweet"],
+      #views > div > div[id^="tweet"] + div[id^="reply"],
+      #views > div > div[id^="reply"] + div[id^="tweet"],
+      #views > div > div[id^="reply"] + div[id^="reply"] {
+        border-top: 1px solid #eee;
       }
 
       #views > div > div:hover {
@@ -123,7 +148,7 @@
         display: inline-block;
       }
 
-      #views .icon {
+      #views > div > div .icon {
         position: absolute;
         left: 0;
         top: 16px;
@@ -131,6 +156,10 @@
         height: 48px;
         margin: 0;
         padding: 4px;
+      }
+
+      #views > div > div.reply .icon {
+        left: 40px;
       }
 
       #views .icon img {

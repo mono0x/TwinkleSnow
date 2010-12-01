@@ -29,6 +29,7 @@ Tab.prototype.receiveTweet = function(tweet) {
   var tabs = View.tabs;
   var insertTarget = element;
   var inReplyToStatusId = data.in_reply_to_status_id;
+  var j = 0;
   while(inReplyToStatusId) {
     var reply = null;
     for(var i = 0, n = tabs.length; i < n; ++i) {
@@ -42,6 +43,15 @@ Tab.prototype.receiveTweet = function(tweet) {
     if(!reply) {
       break;
     }
+    if(j == 1) {
+      insertTarget.after(
+        jQuery('<div />').addClass('expand-reply').attr('data-tweet-id', tweet.data.id).append(
+          jQuery('<a />').text('...').attr('href', '').click(function() {
+            jQuery(this).parent().slideUp('fast', function() { jQuery(this).remove(); });
+            jQuery('#views > div > div.reply[data-tweet-id="' + tweet.data.id + '"]').slideDown('fast');
+            return false;
+          })));
+    }
     element = jQuery('<div />')
       .append(reply.html)
       .attr({
@@ -53,6 +63,7 @@ Tab.prototype.receiveTweet = function(tweet) {
     insertTarget.after(element);
     insertTarget = element;
     inReplyToStatusId = reply.data.in_reply_to_status_id;
+    ++j;
   }
 
   this.removeOldTweets();
