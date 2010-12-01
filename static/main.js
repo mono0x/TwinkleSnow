@@ -122,7 +122,9 @@ jQuery('input').bind('keydown', function(e) {
 var scrollTimer = undefined;
 var setScrollTimer = function() {
   scrollTimer = setInterval(function() {
-    View.currentTab.adjustCursor();
+    if(View.currentTab !== null) {
+      View.currentTab.adjustCursor();
+    }
   }, 1000);
 };
 var clearScrollTimer = function() {
