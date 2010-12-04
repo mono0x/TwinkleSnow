@@ -22,19 +22,19 @@ Tab.prototype.receiveTweet = function(tweet) {
   var data = tweet.data;
 
   var element = jQuery('<div />')
-    .attr({ id: 'tweet-' + data.id, 'data-tweet-id': data.id })
+    .attr({ id: 'tweet-' + data.id_str, 'data-tweet-id': data.id_str })
     .append(tweet.html);
   view.prepend(element);
 
   var tabs = View.tabs;
   var insertTarget = element;
-  var inReplyToStatusId = data.in_reply_to_status_id;
+  var inReplyToStatusId = data.in_reply_to_status_id_str;
   var j = 0;
   while(inReplyToStatusId) {
     var reply = null;
     for(var i = 0, n = tabs.length; i < n; ++i) {
       reply = tabs[i].tweets.find(function(t) {
-        return inReplyToStatusId == t.data.id;
+        return inReplyToStatusId == t.data.id_str;
       });
       if(reply) {
         break;
@@ -45,24 +45,24 @@ Tab.prototype.receiveTweet = function(tweet) {
     }
     if(j == 1) {
       insertTarget.after(
-        jQuery('<div />').addClass('expand-reply').attr('data-tweet-id', tweet.data.id).append(
+        jQuery('<div />').addClass('expand-reply').attr('data-tweet-id', tweet.data.id_str).append(
           jQuery('<a />').text('...').attr('href', '').click(function() {
             jQuery(this).parent().slideUp('fast', function() { jQuery(this).remove(); });
-            jQuery('#views > div > div.reply[data-tweet-id="' + tweet.data.id + '"]').slideDown('fast');
+            jQuery('#views > div > div.reply[data-tweet-id="' + tweet.data.id_str + '"]').slideDown('fast');
             return false;
           })));
     }
     element = jQuery('<div />')
       .append(reply.html)
       .attr({
-        id : 'reply-' + tweet.data.id + '-' + reply.data.id,
-        'data-tweet-id' : tweet.data.id,
-        'data-reply-id' : reply.data.id
+        id : 'reply-' + tweet.data.id_str + '-' + reply.data.id_str,
+        'data-tweet-id' : tweet.data.id_str,
+        'data-reply-id' : reply.data.id_str
       })
       .addClass('reply');
     insertTarget.after(element);
     insertTarget = element;
-    inReplyToStatusId = reply.data.in_reply_to_status_id;
+    inReplyToStatusId = reply.data.in_reply_to_status_id_str;
     ++j;
   }
 
@@ -73,7 +73,7 @@ Tab.prototype.receiveTweet = function(tweet) {
     view.show();
   }
   var height = 0;
-  jQuery('div[data-tweet-id="' + data.id + '"]').each(function() {
+  jQuery('div[data-tweet-id="' + data.id_str + '"]').each(function() {
     height += jQuery(this).outerHeight(true);
   });
   this.scrollTop += height;
@@ -89,7 +89,7 @@ Tab.prototype.removeTweet = function() {
   var tweet = this.tweets.shift();
   this.oldTweets.push(tweet, 0);
 
-  jQuery('div[data-tweet-id="' + tweet.data.id + '"]').remove();
+  jQuery('div[data-tweet-id="' + tweet.data.id_str + '"]').remove();
 };
 
 Tab.prototype.setCursorById = function(id) {
@@ -98,7 +98,7 @@ Tab.prototype.setCursorById = function(id) {
   }
   var tweets = this.tweets;
   for(var i = 0, n = tweets.length; i < n; ++i) {
-    if(tweets[i].data.id == id) {
+    if(tweets[i].data.id_str == id) {
       this.setCursor(i);
       break;
     }
@@ -150,7 +150,7 @@ Tab.prototype.adjustCursor = function() {
   var i = this.cursor;
   while(i > 0) {
     var tweet = tweets[i];
-    var element = jQuery('#tweet-' + tweet.data.id);
+    var element = jQuery('#tweet-' + tweet.data.id_str);
     var top = element.offset().top;
     if(top - scrollTop >= 0) {
       break;
@@ -162,7 +162,7 @@ Tab.prototype.adjustCursor = function() {
     i = this.cursor;
     while(i < tweets.length - 1) {
       var tweet = tweets[i];
-      var element = jQuery('#tweet-' + tweet.data.id);
+      var element = jQuery('#tweet-' + tweet.data.id_str);
       var top = element.offset().top;
       if(top + element.outerHeight(true) - scrollTop <= height) {
         break;
@@ -182,7 +182,7 @@ Tab.prototype.updateCursor = function() {
   view.find('.selected').removeClass('selected');
   if(this.cursor !== null) {
     var tweet = this.tweets[this.cursor];
-    var element = view.find('#tweet-' + tweet.data.id).addClass('selected');
+    var element = view.find('#tweet-' + tweet.data.id_str).addClass('selected');
     var top = element.offset().top;
     if(top - jQuery(window).scrollTop() < 0 || top + element.outerHeight(true) - jQuery(window).scrollTop() >= jQuery(window).height()) {
       jQuery.scrollTo(element);
