@@ -111,8 +111,7 @@ jQuery('#auth form').submit(function() {
 });
 
 jQuery('#views > div > div').live('click', function(e) {
-  var id = parseInt(jQuery(this).attr('data-tweet-id'), 10);
-  View.currentTab.setCursorById(id);
+  View.currentTab.setCursorById(jQuery(this).attr('data-tweet-id'));
 });
 
 jQuery('input').bind('keydown', function(e) {
@@ -172,12 +171,12 @@ jQuery(window).mousewheel(function(e, delta) {
 });
 
 jQuery('a[href="#retweet"]').live('click', function() {
-  var id = jQuery(this).parent().parent().parent().parent().data('tweet-id');
+  var id = jQuery(this).parent().parent().parent().parent().attr('data-tweet-id');
   Actions.retweet(id);
   return false;
 });
 jQuery('a[href="#fav"]').live('click', function() {
-  var id = jQuery(this).parent().parent().parent().parent().data('tweet-id');
+  var id = jQuery(this).parent().parent().parent().parent().attr('data-tweet-id');
   Actions.createFavorite(id);
   return false;
 });
