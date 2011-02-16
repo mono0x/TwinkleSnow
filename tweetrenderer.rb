@@ -85,7 +85,7 @@ class TweetRenderer
       case
       when reply = $1 then %!@<a target="_blank" href="http://twitter.com/#{reply}">#{reply}</a>!
       when hashtag = $2 then %!<a target="_blank" href="http://search.twitter.com/search?q=%23#{hashtag}">\##{hashtag}</a>!
-      when uri = $3 then %!<a target="_blank" class="external" href="#{Rack::Utils.escape_html uri}">#{Rack::Utils.escape_html uri}</a>!
+      when uri = $3 then %!<a target="_blank" rel="noreferrer" class="external" href="#{Rack::Utils.escape_html uri}">#{Rack::Utils.escape_html uri}</a>!
       when $4 then '<br />'
       when $5 then '&quot;'
       when $6 then '&amp;'

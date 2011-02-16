@@ -182,7 +182,7 @@ jQuery('a[href="#fav"]').live('click', function() {
 });
 
 jQuery('a.external').live('click', function() {
-  Utility.openUri($(this).attr('href'));
+  Utility.openUri(jQuery(this).attr('href'));
   return false;
 });
 
