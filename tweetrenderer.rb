@@ -72,8 +72,8 @@ class TweetRenderer
       when %r!http://instagr.am/p/([A-Za-z0-9-]+)/!
         create_image_preview(
           "http://instagr.am/p/#$1",
-          "http://api.linknode.net/instagram/#$1/",
-          :width => 200)
+          "http://instagr.am/p/#$1/media/?size=t",
+          :width => 150, :height => 150)
       when %r!http://p.twipple.jp/(\w)(\w)(\w)(\w)(\w)!
         create_image_preview(
           "http://p.twipple.jp/#$1#$2#$3#$4#$5",
