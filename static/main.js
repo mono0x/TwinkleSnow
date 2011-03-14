@@ -170,13 +170,23 @@ jQuery(window).mousewheel(function(e, delta) {
   return true;
 });
 
-jQuery('a[href="#retweet"]').live('click', function() {
+jQuery('div[id^="tweet"] a[href="#retweet"]').live('click', function() {
   var id = jQuery(this).parent().parent().parent().parent().attr('data-tweet-id');
   Actions.retweet(id);
   return false;
 });
-jQuery('a[href="#fav"]').live('click', function() {
+jQuery('div[id^="tweet"] a[href="#fav"]').live('click', function() {
   var id = jQuery(this).parent().parent().parent().parent().attr('data-tweet-id');
+  Actions.createFavorite(id);
+  return false;
+});
+jQuery('div[id^="reply"] a[href="#retweet"]').live('click', function() {
+  var id = jQuery(this).parent().parent().parent().parent().attr('data-reply-id');
+  Actions.retweet(id);
+  return false;
+});
+jQuery('div[id^="reply"] a[href="#fav"]').live('click', function() {
+  var id = jQuery(this).parent().parent().parent().parent().attr('data-reply-id');
   Actions.createFavorite(id);
   return false;
 });
